@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVDA Chart</title>
+    <script src="lightweight-charts.standalone.production.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            width: 100%; height: 100%;
+            background-color: #11111b;
+            color: #a6adc8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            overflow: hidden;
+        }
+        #top-bar {
+            height: 32px;
+            background-color: #181825;
+            border-bottom: 1px solid #313244;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 4px;
+        }
+        #top-bar .label {
+            font-size: 12px;
+            color: #6c7086;
+            margin-right: 8px;
+        }
+        .interval-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: #a6adc8;
+            font-size: 12px;
+            padding: 4px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.15s ease;
+        }
+        .interval-btn:hover {
+            background-color: #313244;
+            color: #cdd6f4;
+        }
+        .interval-btn.active {
+            background-color: #89b4fa;
+            color: #11111b;
+            font-weight: 600;
+        }
+        #chart-container {
+            position: absolute;
+            top: 32px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="top-bar">
+        <span class="label">Interwał:</span>
+        <button class="interval-btn active" data-interval="1m">1m</button>
+        <button class="interval-btn" data-interval="5m">5m</button>
+        <button class="interval-btn" data-interval="15m">15m</button>
+        <button class="interval-btn" data-interval="1h">1h</button>
+        <button class="interval-btn" data-interval="1d">1d</button>
+    </div>
+    <div id="chart-container"></div>
+
+    <script>
+        const chartContainer = document.getElementById('chart-container');
+        const chart = LightweightCharts.createChart(chartContainer, {
+            width: chartContainer.clientWidth,
+            height: chartContainer.clientHeight,
+            layout: {
+                background: { type: 'solid', color: '#11111b' },
+                textColor: '#a6adc8',
+                fontSize: 14,
+            },
+            grid: {
+                vertLines: { color: 'rgba(49, 50, 68, 0.4)' },
+                horzLines: { color: 'rgba(49, 50, 68, 0.4)' },
+            },
+            crosshair: {
+                mode: LightweightCharts.CrosshairMode.Normal,
+                vertLine: { color: '#6c7086', width: 1, style: 2 },
+                horzLine: { color: '#6c7086', width: 1, style: 2 },
+            },
+            rightPriceScale: {
+                borderColor: '#313244',
+                scaleMargins: { top: 0.1, bottom: 0.15 },
+            },
+            localization: {
+                // Wymuszenie formatu 24h na etykiecie krzyżyka (crosshair)
+                timeFormatter: (timestamp) => {
+                    const date = new Date(timestamp * 1000);
+                    return date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+                },
+            },
+            timeScale: {
+                borderColor: '#313244',
+                timeVisible: true,
+                secondsVisible: false,
+                rightOffset: 5,
+                barSpacing: 8,
+                // Wymuszenie formatu 24h na dolnej osi X
+                tickMarkFormatter: (time, tickMarkType, locale) => {
+                    const date = new Date(time * 1000);
+                    switch (tickMarkType) {
+                        case 0: // Year
+                            return date.getFullYear();
+                        case 1: // Month
+                            return date.toLocaleDateString('pl-PL', { month: 'short' });
+                        case 2: // DayOfMonth
+                            return date.getDate();
+                        case 3: // Time
+                            return date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', hour12: false });
+                        case 4: // TimeWithSeconds
+                            return date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+                    }
+                },
+            },
+        });
+
+        const candleSeries = chart.addCandlestickSeries({
+            upColor: '#089981',
+            downColor: '#f23645',
+            borderUpColor: '#089981',
+            borderDownColor: '#f23645',
+            wickUpColor: '#089981',
+            wickDownColor: '#f23645',
+        });
+
+        const resizeObserver = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                chart.applyOptions({
+                    width: entry.contentRect.width,
+                    height: entry.contentRect.height,
+                });
+            }
+        });
+        resizeObserver.observe(chartContainer);
+
+        const intervalButtons = document.querySelectorAll('.interval-btn');
+        intervalButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                intervalButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const newInterval = btn.dataset.interval;
+                console.log('INTERVAL_SWITCH:' + newInterval);
+            });
+        });
+
+        window.loadHistoricalData = function(jsonStr) {
+            try {
+                const data = JSON.parse(jsonStr);
+                if (Array.isArray(data) && data.length > 0) {
+                    candleSeries.setData(data);
+                    chart.timeScale().fitContent();
+                }
+            } catch (e) {
+                console.log("DEBUG_JS: loadHistoricalData error: " + e);
+            }
+        };
+
+        window.updateRealTimeBar = function(jsonStr) {
+            try {
+                const bar = JSON.parse(jsonStr);
+                if (bar && bar.time !== undefined) {
+                    candleSeries.update(bar);
+                }
+            } catch (e) {
+                console.log("DEBUG_JS: updateRealTimeBar error: " + e);
+            }
+        };
+
+        let currentRangeLines = [];
+        window.showRangeLines = function(jsonStr) {
+            try {
+                const zones = JSON.parse(jsonStr);
+                if (!Array.isArray(zones)) return;
+                zones.forEach(zone => {
+                    const topLine = candleSeries.createPriceLine({
+                        price: zone.top,
+                        color: zone.borderColor,
+                        lineWidth: 1,
+                        lineStyle: LightweightCharts.LineStyle.Solid,
+                        axisLabelVisible: true,
+                        title: zone.label + " MAX⬇️",
+                    });
+                    const bottomLine = candleSeries.createPriceLine({
+                        price: zone.bottom,
+                        color: zone.borderColor,
+                        lineWidth: 1,
+                        lineStyle: LightweightCharts.LineStyle.Solid,
+                        axisLabelVisible: true,
+                        title: zone.label + " MIN⬆️",
+                    });
+                    currentRangeLines.push(topLine, bottomLine);
+                });
+            } catch (e) {
+                console.log("DEBUG_JS: showRangeLines error: " + e);
+            }
+        };
+
+        window.hideRangeLines = function() {
+            currentRangeLines.forEach(line => {
+                try { candleSeries.removePriceLine(line); } catch (e) {}
+            });
+            currentRangeLines = [];
+        };
+
+        let currentSetupLines = [];
+        window.showSetupLines = function(jsonStr) {
+            try {
+                const lines = JSON.parse(jsonStr);
+                if (!Array.isArray(lines)) return;
+                lines.forEach(line => {
+                    const baseLabel = line.label || '';
+                    
+                    if (line.isRange === false || line.top === line.bottom) {
+                        // Przypadek 1: Jedna linia (brak zakresu / identyczne ceny)
+                        const singleLine = candleSeries.createPriceLine({
+                            price: line.top,
+                            color: line.borderColor,
+                            lineWidth: 1.5, // Nieco grubsza dla pojedynczej linii
+                            lineStyle: LightweightCharts.LineStyle.Solid,
+                            axisLabelVisible: true,
+                            title: baseLabel, // Czysta etykieta bez (max)/(min)
+                        });
+                        currentSetupLines.push(singleLine);
+                    } else {
+                        // Przypadek 2: Rzeczywisty zakres (dwie różne ceny)
+                        const topLine = candleSeries.createPriceLine({
+                            price: line.top,
+                            color: line.borderColor,
+                            lineWidth: 1,
+                            lineStyle: LightweightCharts.LineStyle.Solid,
+                            axisLabelVisible: true,
+                            title: baseLabel ? `${baseLabel} (max)` : 'max',
+                        });
+                        
+                        const bottomLine = candleSeries.createPriceLine({
+                            price: line.bottom,
+                            color: line.borderColor,
+                            lineWidth: 1,
+                            lineStyle: LightweightCharts.LineStyle.Dashed, // Przerywana dla dolnej granicy
+                            axisLabelVisible: true,
+                            title: baseLabel ? `${baseLabel} (min)` : 'min',
+                        });
+                        currentSetupLines.push(topLine, bottomLine);
+                    }
+                });
+            } catch (e) {
+                console.log("DEBUG_JS: showSetupLines error: " + e);
+            }
+        };
+
+        window.hideSetupLines = function() {
+            currentSetupLines.forEach(line => {
+                try { candleSeries.removePriceLine(line); } catch (e) {}
+            });
+            currentSetupLines = [];
+        };
+    </script>
+</body>
+</html>

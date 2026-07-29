@@ -1,0 +1,150 @@
+{
+  "metadata": {
+    "timestamp": "2026-07-29T10:58:00+08:00",
+    "primary_ticker": "NVDA",
+    "macro_ticker": "NQ=F"
+  },
+  "macro_environment": {
+    "fear_and_greed_index": 30,
+    "market_sentiment": "mixed-range_rebound"
+  },
+  "assets": {
+    "NASDAQ": {
+      "sentiment": "neutral-cautious_consolidation",
+      "key_gatekeeper_level": 28100.00,
+      "analyses": [
+        {
+          "id": "nasdaq_analysis_01",
+          "name": "Sytuacja Rynkowa, Korelacja i Filtrowanie dla NVDA",
+          "description": "NVDA wykazała próbę lokalnego odbicia do poziomu $197.64 (+0.77%), poruszając się w przedziale $192.74–$198.70. Spółka pozostaje silnie uzależniona od kierunku indeksu NASDAQ-100 oraz funduszu QQQ, które zmagały się ze spadkami (QQQ -0.69%) pod wpływem presji na cały sektor półprzewodników. Relacja z indeksem pełni rolę filtra egzekucyjnego: do aktywacji i potwierdzenia scenariuszy wzrostowych wymagane jest utrzymanie otwarcia sesji przez QQQ i wybicie przez NVDA strefy $198.70–$200.00 na zwiększonym wolumenie. Z kolei słabość NASDAQ i spadek NVDA poniżej $195.70 lub złamanie $192.70 unieważnia próbę odbicia i otwiera drogę do spadków w stronę $190.60–$189.80."
+        },
+        {
+          "id": "nasdaq_sentiment_news_02",
+          "name": "Aktualny Sentyment i Wiadomości Rynkowe (AI / Chipy / Pozycjonowanie Opcji)",
+          "description": "Na rynku ścierają się skrajne narracje: rekordowe długoterminowe fundamenty spółki ($81.61 mld przychodu kwartalnego, $58.32 mld zysku netto i $50.34 mld przepływów operacyjnych) napotykają na krótkoterminowy sceptycyzm dotyczący skali nakładów inwestycyjnych (CapEx) i nadpodaży układów scalonych. Dodatkowym czynnikiem ryzyka stały się wyzwania bilansowe związane z gigantycznymi gwarancjami finansowymi dla projektów centrów danych OpenAI (szacowanymi na 250–350 mld USD), co wywołało krytykę ze strony znanych inwestorów (m.in. Michaela Burry'ego). Pozytywnym sygnałem przeciwnym pozostaje pozycjonowanie na rynku opcji (udział opcji Call na poziomie 63.02%), co wskazuje na chęć dyskontowania dołków przez inwestorów detalicznych, jednak generuje też podwyższoną zmienność wokół kluczowych poziomów wykonania $200 i $212.50."
+        }
+      ]
+    },
+    "NVDA": {
+      "current_price": 197.636,
+      "price_ranges": [
+        {
+          "id": "range_intraday_01",
+          "name": "Bazowa Konsolidacja Intraday",
+          "support_zone": [195.50, 199.00],
+          "resistance_zone": [198.70, 200.00],
+          "timeframe": "15m",
+          "color": "#89dceb",
+          "description": "Najbardziej prawdopodobny zakres handlu w przypadku mieszanych sygnałów z QQQ i braku trwałego przełamania poziomu $200.00."
+        },
+        {
+          "id": "range_bullish_02",
+          "name": "Wzrostowa Ekspansja (Bullish Expansion)",
+          "support_zone": [198.70, 200.00],
+          "resistance_zone": [203.00, 204.70],
+          "timeframe": "1h",
+          "color": "#a6e3a1",
+          "description": "Strefa po potwierdzonym wyjściu i zaakceptowaniu ceny powyżej psychologicznego oporu $200.00 z udziałem siły na szerokim rynku."
+        },
+        {
+          "id": "range_bearish_03",
+          "name": "Spadkowa Ekspansja (Bearish Expansion)",
+          "support_zone": [189.80, 193.00],
+          "resistance_zone": [193.00, 194.20],
+          "timeframe": "1h",
+          "color": "#f38ba8",
+          "description": "Zakres uaktywniany po wyłamaniu dołka sesyjnego $192.70, otwierający ruch w kierunku $190.60–$189.80."
+        }
+      ],
+      "setups": [
+        {
+          "id": "setup_nvda_long_breakout_01",
+          "name": "LONG A: Kontynuacja Wybicia (Breakout Continuation)",
+          "bias": "LONG",
+          "conditions": {
+            "trigger_zone": [198.70, 200.00],
+            "trigger_condition": "trwałe odzyskane strefy $200.00 (zamknięcie świecy nad $199.60–$200.00) przy stabilnym zachowaniu QQQ",
+            "nasdaq_confirmation_price": 28100.0,
+            "nasdaq_confirmation_condition": "QQQ utrzymuje się powyżej zakresu otwarcia sesji"
+          },
+          "execution": {
+            "entry_zone": [199.20, 199.60],
+            "stop_loss_zone": [196.80, 196.80],
+            "take_profit_zones": [
+              [203.00, 203.00],
+              [204.60, 204.60]
+            ]
+          },
+          "commentary": "Setup oparty na wybiciu oporu R1. Przy wejściu $199.40 ryzyko wynosi 2.6 USD, a potencjał zysku to 3.6 USD do TP1 (~1.4:1) i 5.2 USD do TP2 (~2.0:1). Szybki powrót pod $198.70 po przebiciu $200 wskazuje na fałszywe wybicie."
+        },
+        {
+          "id": "setup_nvda_long_support_rebound_02",
+          "name": "LONG B: Odbicie od Wsparcia S2 (Support Rebound)",
+          "bias": "LONG",
+          "conditions": {
+            "trigger_zone": [192.70, 193.00],
+            "trigger_condition": "wyraźna reakcja popytowa w strefie S2 (knot odrzucenia, wyższy dołek intraday lub odzysk $193.80)",
+            "nasdaq_confirmation_price": 28100.0,
+            "nasdaq_confirmation_condition": "wyhamowanie spadków w sektorze półprzewodników"
+          },
+          "execution": {
+            "entry_zone": [193.20, 193.80],
+            "stop_loss_zone": [191.90, 191.90],
+            "take_profit_zones": [
+              [196.50, 196.50],
+              [198.70, 198.70]
+            ]
+          },
+          "commentary": "Kupno na dołku wokół $193.50. Stosunek zysku do ryzyka wynosi ~1.9:1 do TP1 oraz ~3.3:1 do TP2 przy ryzyku 1.6 USD. Czyste przełamanie $192.70 anuluje ten scenariusz."
+        },
+        {
+          "id": "setup_nvda_short_rejection_01",
+          "name": "SHORT A: Odrzucenie na Poziomie $200 (Rejection at $200)",
+          "bias": "SHORT",
+          "conditions": {
+            "trigger_zone": [199.00, 199.50],
+            "trigger_condition": "brak siły na przebicie psychologicznej bariery $200.00 i widoczna reakcja podażowa",
+            "nasdaq_confirmation_price": 28100.0,
+            "nasdaq_confirmation_condition": "QQQ odrzuca własne opory intraday"
+          },
+          "execution": {
+            "entry_zone": [199.00, 199.50],
+            "stop_loss_zone": [200.90, 200.90],
+            "take_profit_zones": [
+              [196.50, 196.50],
+              [193.20, 193.20]
+            ]
+          },
+          "commentary": "Gra przeciwko trendowi przy oporze R1. Dla średniego wejścia $199.25 ryzyko wynosi 1.65 USD, zyski to 2.75 USD dla TP1 (~1.7:1) oraz 6.05 USD dla TP2 (~3.7:1). Wyjście powyżej $200.90 unieważnia pozycję."
+        },
+        {
+          "id": "setup_nvda_short_breakdown_02",
+          "name": "SHORT B: Przełamanie Poniżej $192.70 (Breakdown Below $192.70)",
+          "bias": "SHORT",
+          "conditions": {
+            "trigger_zone": [192.60, 193.00],
+            "trigger_condition": "potwierdzone zamknięcie poniżej dołka sesyjnego $192.70 lub nieudana próba retestu tego poziomu od dołu",
+            "nasdaq_confirmation_price": 28100.0,
+            "nasdaq_confirmation_condition": "dalsze pogłębianie spadków na indeksie NASDAQ i spółkach z sektora chipów"
+          },
+          "execution": {
+            "entry_zone": [192.60, 193.00],
+            "stop_loss_zone": [194.20, 194.20],
+            "take_profit_zones": [
+              [190.60, 190.60],
+              [189.80, 189.80]
+            ]
+          },
+          "commentary": "Zagranie pod wybicie wsparcia S2. Przy wejściu $192.80 ryzyko wynosi 1.4 USD, a cele to $190.60 (TP1, R/R ~1.6:1) oraz $189.80 (TP2, R/R ~2.1:1). Szybki powrót nad $193.00 oznacza nieudany breakdown."
+        }
+      ],
+      "correlation_context": {
+        "divergence_warning": {
+          "is_active": true,
+          "type": "high_beta_follower_stretch",
+          "description": "Ze względu na specyfikę tokenizowanych akcji NVDAUSDT, handel odzwierciedla godziny sesyjne rynku amerykańskiego. Wyrazista dysproporcja między silnym bilansem finansowym (dług do kapitału własnego 0.04, wysoki cash flow) a krótkoterminową rotacją sektorową w branży półprzewodników sprawia, że pozycje należy otwierać ściśle według reguł reakcji na poziomach $192.70 oraz $200.00."
+        }
+      }
+    }
+  }
+}

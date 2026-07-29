@@ -1,0 +1,96 @@
+{
+  "metadata": {
+    "timestamp": "2026-07-10T16:12:00Z",
+    "primary_ticker": "NVDA",
+    "macro_ticker": "NQ=F"
+  },
+  "macro_environment": {
+    "fear_and_greed_index": 23,
+    "market_sentiment": "fear"
+  },
+  "assets": {
+    "NASDAQ": {
+      "sentiment": "neutral-rebound",
+      "key_gatekeeper_level": 18000.0,
+      "analyses": [
+        {
+          "id": "nasdaq_analysis_01",
+          "name": "Trend, Szerokość Rynku i Filtrowanie",
+          "description": "NASDAQ wykazuje oznaki lokalnego wyczerpania i presji rotacji sektorowej, mimo że NVDA próbuje odbijać. Indeks pozostaje filtrem nadrzędnym: stabilizacja lub ruch w górę na NASDAQ aktywuje scenariusze breakoutowe na NVDA, podczas gdy jego osłabienie (rollover) natychmiast zaneguje wysiłki kupujących i sprowokuje mocniejsze cofnięcie na spółkach o wysokiej becie."
+        }
+      ]
+    },
+    "NVDA": {
+      "current_price": 209.03,
+      "price_ranges": [
+        {
+          "id": "range_intraday_01",
+          "name": "Bezpośredni Pivot i Strefa Konsolidacji",
+          "support_zone": [204.30, 206.00],
+          "resistance_zone": [209.50, 211.50],
+          "timeframe": "1h",
+          "color": "#89dceb",
+          "description": "Obszar bezpośredniej konsolidacji. NVDA zamknęła sesję na poziomie 209.03 USD (wzrost o 3.41%), zatrzymując się tuż pod kluczowym oporem pivotowym 209.50-211.50. Krótkoterminowe momentum poprawiło się szybciej niż ogólny sentyment rynkowy (Fear & Greed na poziomie 23), co sugeruje, że odbicie ma charakter techniczny i jest podatne na gwałtowne cofnięcia w głąb strefy neutralnej (204.30-209.50), jeśli popyt nie zdoła trwale zaabsorbować nawisu podaży."
+        },
+        {
+          "id": "range_swing_02",
+          "name": "Zewnętrzne Pule Płynności i Główna Podaż",
+          "support_zone": [199.50, 201.00],
+          "resistance_zone": [214.50, 217.90],
+          "timeframe": "1h",
+          "color": "#b4befe",
+          "description": "Kluczowe strefy strukturalne wyższego rzędu. Dolne ograniczenie (199.50-201.00) stanowi krytyczny basen płynności i poziom popytowy, gdzie kupujący wykazują silną skłonność do obrony (higher lows). Górne ograniczenie (214.5-217.90) to strefa potężnej podaży, wynikająca z wcześniejszych maksimów lokalnych i nieudanych prób wyciągania wykresu po korekcie. Trwałe wyjście powyżej 217.90 otwiera przestrzeń do ekspansji w kierunku 222.80-224.90."
+        }
+      ],
+      "setups": [
+        {
+          "id": "setup_nvda_long_01",
+          "name": "NVDA Obrona Wsparcia lub Powrót po Wybiciu",
+          "bias": "LONG",
+          "conditions": {
+            "trigger_zone": [206.00, 209.50],
+            "trigger_condition": "utrzymanie powyżej 206 z impetem lub potwierdzenie wybicia powyżej 209.5",
+            "nasdaq_confirmation_price": 18150.0,
+            "nasdaq_confirmation_condition": "nasdaq pozostaje konstruktywny a półprzewodniki silne"
+          },
+          "execution": {
+            "entry_zone": [206.20, 209.70],
+            "stop_loss_zone": [201.60, 201.60],
+            "take_profit_zones": [
+              [214.40, 214.40],
+              [217.80, 217.80]
+            ]
+          },
+          "commentary": "Strategia na pozycję długą opiera się na dwóch precyzyjnych punktach wejścia: (1) Rozegranie udanego retestu i obrony lokalnego wsparcia na poziomie 206.20 USD, co potwierdziłoby budowanie struktury wyższego dołka (higher low). (2) Wejście z impetem (momentum) po potwierdzeniu wybicia oporu na poziomie 209.70 USD. Warunkiem koniecznym powodzenia tego setupu jest pro-wzrostowe zachowanie indeksu NASDAQ, które pozwoli bykom na przejście przez gęstą strefę podaży 209-211 USD. Targety TP1 i TP2 zorientowane są wokół sufitu poprzedniego swingu rynkowego. Poziom Stop Loss (201.60) unieważnia setup w przypadku całkowitego załamania strefy popytowej."
+        },
+        {
+          "id": "setup_nvda_short_02",
+          "name": "NVDA Potwierdzenie Załamania lub Odrzucenie Oporu",
+          "bias": "SHORT",
+          "conditions": {
+            "trigger_zone": [206.00, 217.90],
+            "trigger_condition": "utrata poziomu 206 po nieudanym utrzymaniu 209.5 lub gwałtowne odrzucenie na poziomie 214.5-217.9",
+            "nasdaq_confirmation_price": 18100.0,
+            "nasdaq_confirmation_condition": "nasdaq wykazuje słabość w ciągu dnia i słabą szerokość rynku"
+          },
+          "execution": {
+            "entry_zone": [205.80, 214.80],
+            "stop_loss_zone": [209.90, 219.20],
+            "take_profit_zones": [
+              [201.20, 201.20],
+              [199.60, 199.60]
+            ]
+          },
+          "commentary": "Rozegranie pozycji krótkiej reprezentuje podejście typu 'fade' wobec słabnącego momentum kupujących i zakłada dwa scenariusze: (1) Wejście na potwierdzenie przełamania (breakdown) na poziomie 205.80 USD, kiedy rynek traci strefę 206-204, sygnalizując uwięzienie kupujących na szczycie odbicia i wymuszając kapitulację w stronę 201.20-199.60. Stop Loss dla tego wariantu wynosi 209.90 USD. (2) Pozycja krótka na poziomie 214.80 USD, bezpośrednio po gwałtownym podejściu i odrzuceniu wyższego oporu strukturalnego (214.5-217.9), z szerokim Stop Lossem na 219.20 USD (powyżej strefy podaży). Ten setup staje się wysoce asymetryczny w sytuacji, gdy szeroki rynek oraz kontrakty na NASDAQ tracą dynamikę w ciągu dnia."
+        }
+      ],
+      "correlation_context": {
+        "divergence_warning": {
+          "is_active": true,
+          "type": "high_beta_follower_stretch",
+          "description": "Mimo bardzo silnych fundamentów spółki (kwartalne przychody na poziomie 81.61 mld USD i zysk netto 58.32 mld USD) oraz widocznego napływu kapitału na opcjach call (agresywne pozycje pod strike 270 USD), kurs akcji w krótkim terminie podlega rygorystycznym ograniczeniom płynnościowym indeksu NASDAQ. Jeśli indeks wykaże słabość, bycze pozycje na opcjach nie wystarczą do podtrzymania trendu i NVDA ulegnie głębszej rotacji spadkowej. Handel powinien ściśle uwzględniać mapę egzekucyjną: powyżej 209.50 faworyzowane są długie pozycje, w przedziale 206.00-209.50 rynek ma charakter poszarpanego 'chopu', a poniżej 206.00 przewagę zyskują niedźwiedzie."
+        }
+      }
+    }
+  }
+}
