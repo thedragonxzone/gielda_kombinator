@@ -2,7 +2,7 @@
 """
 Multi-Ticker (Bitget) + NASDAQ (TradingView widget) Trading Assistant
 - Panel boczny PO LEWEJ, wykresy PO PRAWEJ
-- Bitget: lightweight-charts z danymi z Bitget Futures + strefy/setupy z pliku JSON przypisanego do wybranego wyciągu (np. TICKER_BITGET.json)
+- Bitget: lightweight-charts z danymi z Bitget Futures + strefy/setupy z pliku JSON
 - Wybór Tickerów w QComboBox + zapamiętywanie wyboru w config.json
 """
 import json
@@ -12,9 +12,7 @@ import time
 import requests
 from pathlib import Path
 from typing import Dict, List
-
 import websocket
-
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QSplitter, QLabel, QListWidget, QListWidgetItem,
@@ -24,7 +22,7 @@ from PyQt6.QtCore import (
     Qt, QThread, pyqtSignal, QObject, QTimer, QUrl
 )
 from PyQt6.QtWebEngineWidgets import QWebEngineView
-from PyQt6.QtWebEngineCore import QWebEnginePage, QWebEngineProfile
+from PyQt6.QtWebEngineCore import QWebEnginePage, QWebEngineProfile, QWebEngineSettings
 from PyQt6.QtGui import QFont, QTextCursor, QIcon
 from PyQt6.QtMultimedia import QSoundEffect
 from watchdog.observers import Observer
@@ -36,7 +34,6 @@ BITGET_INTERVAL_MAP = {
 }
 
 # CONFIG: Lista wspieranych tickerów
-# Klucz: Symbol w Bitget (instId) | Wartość: Skrócona nazwa (używana m.in. w strukturze plików JSON)
 AVAILABLE_TICKERS = {
     "NVDAUSDT": "NVDA",
     "SNDKUSDT": "SNDK",
@@ -45,11 +42,7 @@ AVAILABLE_TICKERS = {
     "SOLUSDT": "SOL"
 }
 
-
 class BitgetFuturesClient(QThread):
-    """
-    Klient Bitget Futures - dane historyczne przez REST, real-time przez WebSocket.
-    """
     historical_data_ready = pyqtSignal(str, str, str)
     realtime_update_ready = pyqtSignal(str, str, str)
     change_interval_signal = pyqtSignal(str, str)
@@ -59,15 +52,12 @@ class BitgetFuturesClient(QThread):
         super().__init__()
         self.running = True
         self.active_ticker = default_ticker
-        
         self.monitored_assets = {
             "ASSET": {"ticker": self.active_ticker, "interval": "1m", "last_ts": 0}
         }
-
         self.base_url = "https://api.bitget.com/api/v2/mix/market/candles"
         self.ws_url = "wss://ws.bitget.com/v2/ws/public"
         self.ws = None
-
         self.change_interval_signal.connect(self._change_ws_subscription)
         self.change_ticker_signal.connect(self._change_active_ticker)
 
@@ -95,12 +85,10 @@ class BitgetFuturesClient(QThread):
         bitget_granularity = BITGET_INTERVAL_MAP.get(ui_interval, "1m")
         self.monitored_assets[asset_id]["interval"] = ui_interval
         symbol = self.monitored_assets[asset_id]["ticker"]
-
         all_candles = []
         last_end_time = None
         target_cycles = 3
         print(f"[PYTHON] Rozpoczynam pobieranie ~3000 świec (REST) dla {symbol}...")
-
         for cycle in range(target_cycles):
             candles = self.fetch_candles(symbol, bitget_granularity, limit=1000, end_time=last_end_time)
             if not candles:
@@ -114,7 +102,7 @@ class BitgetFuturesClient(QThread):
             if len(candles) < 1000:
                 break
             time.sleep(0.1)
-
+        
         if all_candles:
             parsed_history = []
             seen_times = set()
@@ -146,7 +134,6 @@ class BitgetFuturesClient(QThread):
         bitget_granularity = BITGET_INTERVAL_MAP.get(info["interval"], "1m")
         channel = self._get_channel_name(bitget_granularity)
         ticker = info["ticker"]
-
         msg = {
             "op": "subscribe",
             "args": [{"instType": "USDT-FUTURES", "channel": channel, "instId": ticker}]
@@ -163,7 +150,6 @@ class BitgetFuturesClient(QThread):
         bitget_granularity = BITGET_INTERVAL_MAP.get(info["interval"], "1m")
         channel = self._get_channel_name(bitget_granularity)
         ticker = info["ticker"]
-
         msg = {
             "op": "unsubscribe",
             "args": [{"instType": "USDT-FUTURES", "channel": channel, "instId": ticker}]
@@ -214,38 +200,35 @@ class BitgetFuturesClient(QThread):
     def _on_message(self, ws, message):
         if message == "pong":
             return
-
         try:
             data = json.loads(message)
         except json.JSONDecodeError:
             return
-
+        
         if "event" in data and data["event"] in ("subscribe", "unsubscribe"):
             print(f"[WS] Potwierdzenie: {data.get('event')} dla {data.get('arg')}")
             return
-
+        
         if "data" not in data or not data["data"]:
             return
-
+        
         inst_id = data.get("arg", {}).get("instId")
         asset_id = None
         for aid, info in self.monitored_assets.items():
             if info["ticker"] == inst_id:
                 asset_id = aid
                 break
-
+        
         if not asset_id:
             return
-
+        
         for candle_arr in data["data"]:
             if len(candle_arr) < 6:
                 continue
-
             try:
                 raw_ts = int(candle_arr[0])
                 clean_ts = int(raw_ts // 1000) if raw_ts > 10000000000 else int(raw_ts)
                 last_recorded = self.monitored_assets[asset_id].get("last_ts", 0)
-
                 if clean_ts >= last_recorded:
                     bar = {
                         "time": clean_ts,
@@ -293,7 +276,6 @@ class BitgetFuturesClient(QThread):
             except Exception:
                 pass
 
-
 class FileChangeHandler(FileSystemEventHandler):
     def __init__(self, callback):
         self.callback = callback
@@ -301,7 +283,6 @@ class FileChangeHandler(FileSystemEventHandler):
     def on_modified(self, event):
         if not event.is_directory and event.src_path.endswith('.json'):
             self.callback()
-
 
 class SchemaWatcher(QObject):
     file_changed = pyqtSignal()
@@ -317,7 +298,6 @@ class SchemaWatcher(QObject):
         self.observer.stop()
         self.observer.join()
 
-
 class WebEnginePageCustom(QWebEnginePage):
     def __init__(self, parent, asset_id):
         super().__init__(parent)
@@ -331,32 +311,24 @@ class WebEnginePageCustom(QWebEnginePage):
             new_interval = message.replace("INTERVAL_SWITCH:", "").strip()
             self.parent_win.handle_interval_change(self.asset_id, new_interval)
 
-
 class MainWindow(QMainWindow):
     BASE_TITLE = "Bitget Conditioner"
 
     def __init__(self):
         super().__init__()
         self.resize(1600, 950)
-
         self.base_dir = Path(__file__).resolve().parent
         self.config_path = self.base_dir / "config.json"
-
-        # Flaga opóźniająca powiadomienia na start / zmianę tickera
-        self.alerts_enabled = False
         
-        # Uruchamiamy timer, który włączy alerty po 5 sekundach od startu programu
+        self.alerts_enabled = False
         QTimer.singleShot(5000, self.enable_alerts)
         
-        # Wczytanie ostatnio używanego tickera z pliku konfiguracyjnego
         self.current_ticker = self.load_saved_ticker()
-        
         self.current_setup = None
         self.chart_interval = "1m"
         self.chart_ready = False
         self.schema_data = None
-
-        # --- KONFIGURACJA DŹWIĘKU I ALERTÓW ---
+        
         self.alert_sound_path = self.base_dir / "alert.wav"
         self.sound_effect = QSoundEffect()
         if self.alert_sound_path.exists():
@@ -364,24 +336,23 @@ class MainWindow(QMainWindow):
             self.sound_effect.setVolume(1.0)
         else:
             print(f"⚠️ [WARNING] Brak pliku dźwiękowego: {self.alert_sound_path}")
-
+        
         self.last_alert_state = False
-
         self.reload_timer = QTimer()
         self.reload_timer.setSingleShot(True)
         self.reload_timer.timeout.connect(self.reset_and_load_schema)
-
+        
         self.init_ui()
-
+        
         self.bitget_client = BitgetFuturesClient(default_ticker=self.current_ticker)
         self.bitget_client.historical_data_ready.connect(self.on_historical_data)
         self.bitget_client.realtime_update_ready.connect(self.on_realtime_update)
         self.bitget_client.start()
-
+        
         sciezka_ikony = self.base_dir / "gielda_kombinator.svg"
         if sciezka_ikony.exists():
             self.setWindowIcon(QIcon(str(sciezka_ikony)))
-
+            
         self.file_watcher = SchemaWatcher(str(self.base_dir))
         self.file_watcher.file_changed.connect(self.on_file_changed)
 
@@ -390,13 +361,9 @@ class MainWindow(QMainWindow):
         print("[INFO] Alerty dźwiękowe zostały aktywowane.")
 
     def get_schema_path_for_ticker(self, ticker_symbol: str) -> Path:
-        """ Dynamiczne mapowanie pliku JSON dla wskazanego tickera """
         short_name = AVAILABLE_TICKERS.get(ticker_symbol, "NVDA")
         if short_name == "NVDA":
-            # Dla zachowania wstecznej kompatybilności domyślnego pliku
             path = self.base_dir / "NVDA_BITGET.json"
-            if not path.exists():
-                path = self.base_dir / "NVDA_BITGET.json"
             return path
         return self.base_dir / f"{short_name}_BITGET.json"
 
@@ -405,9 +372,9 @@ class MainWindow(QMainWindow):
             try:
                 with open(self.config_path, "r", encoding="utf-8") as f:
                     cfg = json.load(f)
-                    ticker = cfg.get("last_ticker")
-                    if ticker in AVAILABLE_TICKERS:
-                        return ticker
+                ticker = cfg.get("last_ticker")
+                if ticker in AVAILABLE_TICKERS:
+                    return ticker
             except Exception as e:
                 print(f"[CONFIG ERROR] Błąd wczytywania config.json: {e}")
         return "NVDAUSDT"
@@ -424,17 +391,15 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(main_widget)
         main_layout = QHBoxLayout(main_widget)
         main_layout.setContentsMargins(5, 5, 5, 5)
-
+        
         main_splitter = QSplitter(Qt.Orientation.Horizontal)
         main_splitter.setStyleSheet("QSplitter::handle { background-color: #313244; }")
-
-        # === LEWY PANEL ===
+        
         left_panel = QFrame()
         left_panel.setStyleSheet("background-color: #1e1e2e; border-right: 1px solid #313244;")
         left_layout = QVBoxLayout(left_panel)
         left_layout.setContentsMargins(10, 10, 10, 10)
-
-        # --- SEKCJA WYBORU TICKERA ---
+        
         left_layout.addWidget(QLabel("Wybór Tickeru (Bitget):", styleSheet="color: #bac2de; font-weight: bold;"))
         self.ticker_combo = QComboBox()
         self.ticker_combo.setStyleSheet("""
@@ -450,24 +415,22 @@ class MainWindow(QMainWindow):
         for sym, short in AVAILABLE_TICKERS.items():
             self.ticker_combo.addItem(f"{sym} ({short})", sym)
         
-        # Ustawienie wybranego tickera z configu
         idx = self.ticker_combo.findData(self.current_ticker)
         if idx >= 0:
             self.ticker_combo.setCurrentIndex(idx)
         self.ticker_combo.currentIndexChanged.connect(self.on_ticker_changed)
         left_layout.addWidget(self.ticker_combo)
-
-        # --- SEKCJA OPCJI (DŹWIĘK ON/OFF) ---
+        
         self.sound_checkbox = QCheckBox("🔊 Dźwięk powiadomień Entry")
         self.sound_checkbox.setChecked(False)
         self.sound_checkbox.setStyleSheet("color: #a6e3a1; font-weight: bold; margin-top: 5px; margin-bottom: 5px;")
         left_layout.addWidget(self.sound_checkbox)
-
+        
         self.macro_label = QLabel("Sentyment: N/A")
         self.macro_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         self.macro_label.setStyleSheet("color: #cdd6f4;")
         left_layout.addWidget(self.macro_label)
-
+        
         left_layout.addWidget(QLabel("Kontekst Rynkowy (NASDAQ):", styleSheet="color: #bac2de; font-weight: bold;"))
         self.market_context_box = QTextEdit()
         self.market_context_box.setReadOnly(True)
@@ -477,15 +440,15 @@ class MainWindow(QMainWindow):
             "border-radius: 4px; font-size: 11px;"
         )
         left_layout.addWidget(self.market_context_box)
-
+        
         left_inner_splitter = QSplitter(Qt.Orientation.Vertical)
         left_inner_splitter.setStyleSheet("QSplitter::handle { background-color: #313244; }")
-
+        
         lists_widget = QWidget()
         lists_layout = QVBoxLayout(lists_widget)
         lists_layout.setContentsMargins(0, 0, 0, 0)
-
         lists_layout.addWidget(QLabel("Aktywne Poziomy i Analizy:", styleSheet="color: #bac2de; font-weight: bold;"))
+        
         self.ranges_list = QListWidget()
         self.ranges_list.setStyleSheet(
             "background-color: #181825; color: #cdd6f4; border: 1px solid #313244; border-radius: 4px;"
@@ -493,11 +456,11 @@ class MainWindow(QMainWindow):
         self.ranges_list.itemChanged.connect(self.on_range_visibility_changed)
         self.ranges_list.itemClicked.connect(self.on_range_selected)
         lists_layout.addWidget(self.ranges_list)
-
+        
         self.setups_label = QLabel(f"Dostępne Strategie {AVAILABLE_TICKERS.get(self.current_ticker)} (Setups):")
         self.setups_label.setStyleSheet("color: #bac2de; font-weight: bold;")
         lists_layout.addWidget(self.setups_label)
-
+        
         self.setups_list = QListWidget()
         self.setups_list.setStyleSheet(
             "background-color: #181825; color: #cdd6f4; border: 1px solid #313244; border-radius: 4px;"
@@ -505,12 +468,12 @@ class MainWindow(QMainWindow):
         self.setups_list.itemChanged.connect(self.on_setup_visibility_changed)
         self.setups_list.itemClicked.connect(self.on_setup_selected)
         lists_layout.addWidget(self.setups_list)
-
+        
         details_widget = QWidget()
         details_layout = QVBoxLayout(details_widget)
         details_layout.setContentsMargins(0, 0, 0, 0)
-
         details_layout.addWidget(QLabel("Komentarz i Wytyczne Strategii:", styleSheet="color: #bac2de; font-weight: bold;"))
+        
         self.details_box = QTextEdit()
         self.details_box.setReadOnly(True)
         self.details_box.setStyleSheet(
@@ -518,43 +481,43 @@ class MainWindow(QMainWindow):
             "border-radius: 4px; font-family: monospace;"
         )
         details_layout.addWidget(self.details_box)
-
+        
         left_inner_splitter.addWidget(lists_widget)
         left_inner_splitter.addWidget(details_widget)
         left_inner_splitter.setSizes([400, 300])
         left_layout.addWidget(left_inner_splitter, stretch=1)
-
-        # === PRAWA STRONA: WYKRESY ===
+        
         chart_splitter = QSplitter(Qt.Orientation.Vertical)
         chart_splitter.setStyleSheet("background-color: #11111b; QSplitter::handle { background-color: #313244; }")
-
+        
         self.chart_container = QWidget()
         chart_lay = QVBoxLayout(self.chart_container)
         chart_lay.setContentsMargins(0, 0, 0, 0)
         chart_lay.setSpacing(0)
-
+        
         self.chart_label = QLabel(f"{self.current_ticker} (Bitget Futures) - Interwał: {self.chart_interval}")
         self.chart_label.setStyleSheet("background-color: #11111b; color: #a6adc8; padding: 6px; font-weight: bold;")
         self.chart_label.setFixedHeight(28)
+        
         self.main_chart_view = QWebEngineView()
         self.main_page = WebEnginePageCustom(self, "ASSET")
         self.main_chart_view.setPage(self.main_page)
-
+        
         chart_lay.addWidget(self.chart_label)
         chart_lay.addWidget(self.main_chart_view, stretch=1)
-
+        
         self.nasdaq_container = QWidget()
         nasdaq_lay = QVBoxLayout(self.nasdaq_container)
         nasdaq_lay.setContentsMargins(0, 0, 0, 0)
         nasdaq_lay.setSpacing(0)
-
+        
         header_layout = QHBoxLayout()
         header_layout.setContentsMargins(0, 0, 0, 0)
         self.nasdaq_label = QLabel("NASDAQ-100 (TradingView CFD) - Podgląd rynku")
         self.nasdaq_label.setStyleSheet("background-color: #11111b; color: #a6adc8; padding: 6px; font-weight: bold;")
         self.nasdaq_label.setFixedHeight(28)
         header_layout.addWidget(self.nasdaq_label, stretch=1)
-
+        
         self.tv_toggle_btn = QPushButton("Włącz TradingView")
         self.tv_toggle_btn.setFixedHeight(28)
         self.tv_toggle_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -568,39 +531,37 @@ class MainWindow(QMainWindow):
         """)
         self.tv_toggle_btn.clicked.connect(self.toggle_tradingview)
         header_layout.addWidget(self.tv_toggle_btn)
-        
         nasdaq_lay.addLayout(header_layout)
-
+        
         self.nasdaq_chart_container = QWidget()
         self.nasdaq_chart_container.setStyleSheet("background-color: #000000;")
         self.nasdaq_chart_lay = QVBoxLayout(self.nasdaq_chart_container)
         self.nasdaq_chart_lay.setContentsMargins(0, 0, 0, 0)
-
+        
         self.tv_placeholder = QLabel("TradingView jest wyłączony.\nKliknij przycisk powyżej, aby załadować wykres (oszczędzanie CPU).")
         self.tv_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.tv_placeholder.setStyleSheet("color: #6c7086; font-size: 14px; background-color: #11111b;")
         self.nasdaq_chart_lay.addWidget(self.tv_placeholder)
-
         nasdaq_lay.addWidget(self.nasdaq_chart_container, stretch=1)
-
+        
         self.nasdaq_chart_view = None
         self.tv_is_active = False
-
+        
         chart_splitter.addWidget(self.chart_container)
         chart_splitter.addWidget(self.nasdaq_container)
         chart_splitter.setCollapsible(0, False)
         chart_splitter.setCollapsible(1, False)
         chart_splitter.setSizes([450, 450])
-
+        
         main_splitter.addWidget(left_panel)
         main_splitter.addWidget(chart_splitter)
         main_splitter.setSizes([420, 1180])
         main_layout.addWidget(main_splitter, stretch=1)
-
+        
         chart_html_path = self.base_dir / "chart.html"
         self.main_chart_view.setUrl(QUrl.fromLocalFile(str(chart_html_path)))
         self.main_chart_view.loadFinished.connect(self.on_chart_load_finished)
-
+        
         self.update_window_title()
 
     def update_window_title(self):
@@ -608,52 +569,37 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(f"[{short_name}] - {self.BASE_TITLE}")
 
     def generate_tradingview_html(self) -> str:
-        settings = {
+        baseUrl = "https://s.tradingview.com/widgetembed/"
+        queryParams = {
             "symbol": "IG:NASDAQ",
             "interval": "1",
             "theme": "dark",
             "style": "1",
             "timezone": "Europe/Warsaw",
             "locale": "pl",
-            "toolbar_bg": "#000000",
-            "enable_publishing": False,
-            "hide_side_toolbar": False,
-            "allow_symbol_change": False,
-            "save_image": False,
-            "width": "100%",
-            "height": "100%",
-            "studies": [
-                "VWAP@tv-basicstudies",
-            ]
+            "hideideas": "1",
+            "backgroundColor": "#000000",
+            "studies": "VWAP@tv-basicstudies",
+            "disabled_features": '["show_right_widgets_panel_by_default","right_toolbar","widget_logo","hide_top_toolbar","hide_side_toolbar","volume_force_overlay","create_volume_indicator_by_default","display_studies_logo_in_legend","use_localstorage"]'
         }
-        settings_json = json.dumps(settings)
-
+        from urllib.parse import urlencode
+        full_url = f"{baseUrl}?{urlencode(queryParams)}"
         return f"""
-<!DOCTYPE html>
-<html style="margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;">
-<head>
-<meta charset="utf-8">
-<style>
-html, body {{ margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; background-color: #000000; overflow: hidden; }}
-#tv_chart_nasdaq {{ width: 100% !important; height: 100% !important; position: absolute; top: 0; left: 0; }}
-</style>
-</head>
-<body>
-<div id="tv_chart_nasdaq"></div>
-<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-<script type="text/javascript">
-try {{
-    var config = {settings_json};
-    config.container_id = "tv_chart_nasdaq";
-    new TradingView.widget(config);
-}} catch (e) {{
-    console.error("Błąd inicjalizacji wykresu TradingView:", e);
-}}
-</script>
-</body>
-</html>
-"""
-    
+        <!DOCTYPE html>
+        <html style="margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;">
+        <head>
+        <meta charset="utf-8">
+        <style>
+        html, body {{ margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000000; overflow: hidden; }}
+        iframe {{ width: 100%; height: 100%; border: none; display: block; }}
+        </style>
+        </head>
+        <body>
+        <iframe src="{full_url}" scrolling="no" allowtransparency="true"></iframe>
+        </body>
+        </html>
+        """
+
     def toggle_tradingview(self):
         if self.tv_is_active:
             if self.nasdaq_chart_view:
@@ -661,10 +607,8 @@ try {{
                 self.nasdaq_chart_view.stop()
                 self.nasdaq_chart_view.deleteLater()
                 self.nasdaq_chart_view = None
-            
             self.tv_placeholder.show()
             self.tv_is_active = False
-            
             self.tv_toggle_btn.setText("Włącz TradingView")
             self.tv_toggle_btn.setStyleSheet("""
                 QPushButton {
@@ -675,15 +619,30 @@ try {{
             """)
         else:
             self.tv_placeholder.hide()
-            
             self.nasdaq_chart_view = QWebEngineView()
+            
+            # Odchudzenie ustawień przeglądarki dla widżetu NASDAQ
+            settings = self.nasdaq_chart_view.settings()
+            settings.setAttribute(QWebEngineSettings.WebAttribute.ScrollAnimatorEnabled, False)
+            settings.setAttribute(QWebEngineSettings.WebAttribute.LocalStorageEnabled, False)
+            settings.setAttribute(QWebEngineSettings.WebAttribute.JavascriptCanAccessClipboard, False)
+            settings.setAttribute(QWebEngineSettings.WebAttribute.PluginsEnabled, False)
+            
             self.nasdaq_chart_lay.addWidget(self.nasdaq_chart_view)
             
+            # ZAPIS DO PLIKU I setUrl (omija sandboxing setHtml)
             nasdaq_html_content = self.generate_tradingview_html()
-            self.nasdaq_chart_view.setHtml(nasdaq_html_content, QUrl("https://s3.tradingview.com"))
-            
+            nasdaq_html_path = self.base_dir / "nasdaq_tv.html"
+            try:
+                with open(nasdaq_html_path, "w", encoding="utf-8") as f:
+                    f.write(nasdaq_html_content)
+                self.nasdaq_chart_view.setUrl(QUrl.fromLocalFile(str(nasdaq_html_path)))
+            except Exception as e:
+                print(f"[ERROR] Nie udało się zapisać tymczasowego HTML dla TV: {e}")
+                # Fallback
+                self.nasdaq_chart_view.setHtml(nasdaq_html_content, QUrl("https://s.tradingview.com"))
+
             self.tv_is_active = True
-            
             self.tv_toggle_btn.setText("Wyłącz TV")
             self.tv_toggle_btn.setStyleSheet("""
                 QPushButton {
@@ -697,20 +656,16 @@ try {{
         new_ticker = self.ticker_combo.itemData(index)
         if not new_ticker or new_ticker == self.current_ticker:
             return
-
         print(f"[UI] Zmiana wybranego waloru: {self.current_ticker} -> {new_ticker}")
         self.current_ticker = new_ticker
         self.save_current_ticker()
-
         short_name = AVAILABLE_TICKERS.get(new_ticker, new_ticker)
         self.setups_label.setText(f"Dostępne Strategie {short_name} (Setups):")
         self.chart_label.setText(f"{self.current_ticker} (Bitget Futures) - Interwał: {self.chart_interval}")
         self.update_window_title()
-
-        # Powiadom klienta WebSocket o nowym tickerze
+        
         self.bitget_client.change_ticker_signal.emit("ASSET", self.current_ticker)
         
-        # Pobierz nową historię i załaduj właściwy JSON
         if self.chart_ready:
             self.bitget_client.load_historical("ASSET", self.chart_interval, short_name)
             self.reset_and_load_schema()
@@ -724,25 +679,25 @@ try {{
     def on_historical_data(self, asset_id: str, data_json: str, ticker_name: str):
         if self.chart_ready:
             js_code = f"""
-if (typeof window.loadHistoricalData === 'function') {{
-    window.loadHistoricalData(`{data_json}`);
-}} else {{
-    console.log('DEBUG_JS: loadHistoricalData jeszcze nie jest gotowe.');
-}}
-"""
+            if (typeof window.loadHistoricalData === 'function') {{
+                window.loadHistoricalData(`{data_json}`);
+            }} else {{
+                console.log('DEBUG_JS: loadHistoricalData jeszcze nie jest gotowe.');
+            }}
+            """
             self.main_chart_view.page().runJavaScript(js_code)
 
     def on_realtime_update(self, asset_id: str, bar_json: str, ticker_name: str):
         if self.chart_ready:
             js_code = f"""
-if (typeof window.updateRealTimeBar === 'function') {{
-    window.updateRealTimeBar(`{bar_json}`);
-}} else {{
-    console.log('DEBUG_JS: updateRealTimeBar jeszcze nie jest gotowe.');
-}}
-"""
+            if (typeof window.updateRealTimeBar === 'function') {{
+                window.updateRealTimeBar(`{bar_json}`);
+            }} else {{
+                console.log('DEBUG_JS: updateRealTimeBar jeszcze nie jest gotowe.');
+            }}
+            """
             self.main_chart_view.page().runJavaScript(js_code)
-
+            
             try:
                 bar = json.loads(bar_json)
                 current_price = bar.get("close")
@@ -754,38 +709,37 @@ if (typeof window.updateRealTimeBar === 'function') {{
     def check_execution_zones(self, current_price: float):
         if not self.alerts_enabled:
             return
+        
         in_any_entry_zone = False
         active_setup_name = ""
-
+        
         for i in range(self.setups_list.count()):
             item = self.setups_list.item(i)
             if item.checkState() == Qt.CheckState.Checked:
                 setup = item.data(Qt.ItemDataRole.UserRole)
                 if not setup:
                     continue
-
                 entry_zone = setup.get("execution", {}).get("entry_zone", [])
                 if len(entry_zone) == 2:
                     bottom, top = float(entry_zone[0]), float(entry_zone[1])
                     if bottom > top:
                         bottom, top = top, bottom
-
                     if bottom <= current_price <= top:
                         in_any_entry_zone = True
                         active_setup_name = setup.get("name", "Setup")
                         break
-
+        
         short_name = AVAILABLE_TICKERS.get(self.current_ticker, self.current_ticker)
         if in_any_entry_zone:
             self.setWindowTitle(f"🚨 [ENTRY ALERT: {active_setup_name} | {current_price:.2f}] - [{short_name}] {self.BASE_TITLE}")
         else:
             self.update_window_title()
-
+            
         if in_any_entry_zone and not self.last_alert_state:
             if self.sound_checkbox.isChecked() and self.alert_sound_path.exists():
                 self.sound_effect.play()
             QApplication.alert(self, 0)
-
+            
         self.last_alert_state = in_any_entry_zone
 
     def reset_and_load_schema(self):
@@ -795,19 +749,19 @@ if (typeof window.updateRealTimeBar === 'function') {{
         self.macro_label.setText("Sentyment: N/A | F&G: N/A")
         self.market_context_box.clear()
         self.details_box.clear()
-
+        
         if self.chart_ready:
             self.main_chart_view.page().runJavaScript("if(window.hideRangeLines){window.hideRangeLines();}")
             self.main_chart_view.page().runJavaScript("if(window.hideSetupLines){window.hideSetupLines();}")
-
+        
         self.ranges_list.blockSignals(True)
         self.ranges_list.clear()
         self.ranges_list.blockSignals(False)
-
+        
         self.setups_list.blockSignals(True)
         self.setups_list.clear()
         self.setups_list.blockSignals(False)
-
+        
         self.load_schema()
 
     def load_schema(self):
@@ -818,7 +772,7 @@ if (typeof window.updateRealTimeBar === 'function') {{
         try:
             with open(schema_path, "r", encoding="utf-8") as f:
                 self.schema_data = json.load(f)
-
+            
             env = self.schema_data.get("macro_environment", {})
             self.macro_label.setText(
                 f"Sentyment: {env.get('market_sentiment','N/A').upper()} | F&G: {env.get('fear_and_greed_index','N/A')}"
@@ -838,13 +792,13 @@ if (typeof window.updateRealTimeBar === 'function') {{
             self.market_context_box.setPlainText("Brak danych o NASDAQ w JSON.")
             self.market_context_box.moveCursor(QTextCursor.MoveOperation.Start)
             return
-
+        
         text = f"Sentiment: {nasdaq_data.get('sentiment', 'N/A')}\n"
         text += f"Kluczowy poziom (Gatekeeper): {nasdaq_data.get('key_gatekeeper_level', 'N/A')}\n"
         analyses = nasdaq_data.get("analyses", [])
         if analyses:
             text += f"\n📌 {analyses[0]['name']}:\n{analyses[0]['description'][:120]}...\n"
-
+        
         self.market_context_box.setPlainText(text)
         self.market_context_box.moveCursor(QTextCursor.MoveOperation.Start)
 
@@ -856,7 +810,7 @@ if (typeof window.updateRealTimeBar === 'function') {{
             if self.ranges_list.item(i).checkState() == Qt.CheckState.Checked
         ]
         self.ranges_list.clear()
-
+        
         nasdaq_data = self.schema_data.get("assets", {}).get("NASDAQ", {})
         nasdaq_analyses = nasdaq_data.get("analyses", [])
         if nasdaq_analyses:
@@ -866,7 +820,7 @@ if (typeof window.updateRealTimeBar === 'function') {{
                 item.setCheckState(Qt.CheckState.Checked)
                 item.setData(Qt.ItemDataRole.UserRole, {"type": "nasdaq_analysis", "data": a})
                 self.ranges_list.addItem(item)
-
+        
         asset_short = AVAILABLE_TICKERS.get(self.current_ticker, "NVDA")
         asset_ranges = self.schema_data.get("assets", {}).get(asset_short, {}).get("price_ranges", [])
         for r in asset_ranges:
@@ -878,7 +832,7 @@ if (typeof window.updateRealTimeBar === 'function') {{
                 item.setCheckState(Qt.CheckState.Unchecked)
             item.setData(Qt.ItemDataRole.UserRole, {"type": "asset_range", "data": r})
             self.ranges_list.addItem(item)
-
+            
         self.ranges_list.blockSignals(False)
         self.redraw_ranges()
 
@@ -891,7 +845,7 @@ if (typeof window.updateRealTimeBar === 'function') {{
         ]
         current_row = self.setups_list.currentRow()
         self.setups_list.clear()
-
+        
         asset_short = AVAILABLE_TICKERS.get(self.current_ticker, "NVDA")
         setups = self.schema_data.get("assets", {}).get(asset_short, {}).get("setups", [])
         for s in setups:
@@ -903,10 +857,10 @@ if (typeof window.updateRealTimeBar === 'function') {{
                 item.setCheckState(Qt.CheckState.Unchecked)
             item.setData(Qt.ItemDataRole.UserRole, s)
             self.setups_list.addItem(item)
-
+            
         if 0 <= current_row < self.setups_list.count():
             self.setups_list.setCurrentRow(current_row)
-
+            
         self.setups_list.blockSignals(False)
         self.redraw_setups()
 
@@ -936,7 +890,6 @@ if (typeof window.updateRealTimeBar === 'function') {{
         if not self.chart_ready:
             return
         self.main_chart_view.page().runJavaScript("if(window.hideRangeLines){window.hideRangeLines();}")
-
         for i in range(self.ranges_list.count()):
             item = self.ranges_list.item(i)
             if item.checkState() == Qt.CheckState.Checked:
@@ -959,18 +912,16 @@ if (typeof window.updateRealTimeBar === 'function') {{
                     ]
                     json_str = json.dumps(zone_info)
                     js_command = f"""
-if(window.showRangeLines){{
-    window.showRangeLines(`{json_str}`);
-}}
-"""
+                    if(window.showRangeLines){{
+                        window.showRangeLines(`{json_str}`);
+                    }}
+                    """
                     self.main_chart_view.page().runJavaScript(js_command)
 
     def redraw_setups(self):
         if not self.chart_ready:
             return
-
         self.main_chart_view.page().runJavaScript("if(window.hideSetupLines){window.hideSetupLines();}")
-
         lines_to_draw = []
         for i in range(self.setups_list.count()):
             item = self.setups_list.item(i)
@@ -978,12 +929,10 @@ if(window.showRangeLines){{
                 setup = item.data(Qt.ItemDataRole.UserRole)
                 if not setup:
                     continue
-                
                 bias = setup.get("bias", "LONG").upper()
                 border_color = "rgba(255, 255, 10, 0.8)"
                 label_prefix = "LONG" if bias == "LONG" else "SHORT"
                 entry_prefix = "🟢 LONG" if bias == "LONG" else "🔴 SHORT"
-
                 name = setup.get("name", "")
                 execution = setup.get("execution", {})
                 
@@ -997,7 +946,7 @@ if(window.showRangeLines){{
                         "borderColor": border_color,
                         "label": f"{entry_prefix} ({name}) Entry"
                     })
-
+                
                 sl_zone = execution.get("stop_loss_zone", [])
                 if len(sl_zone) == 2:
                     t, b = float(sl_zone[1]), float(sl_zone[0])
@@ -1008,7 +957,7 @@ if(window.showRangeLines){{
                         "borderColor": "rgba(239, 83, 80, 0.8)",
                         "label": f"{label_prefix} SL"
                     })
-
+                
                 tp_zones = execution.get("take_profit_zones", [])
                 for idx, tp in enumerate(tp_zones):
                     if len(tp) == 2:
@@ -1020,13 +969,14 @@ if(window.showRangeLines){{
                             "borderColor": "rgba(38, 166, 154, 0.8)",
                             "label": f"{label_prefix} TP{idx+1}"
                         })
+        
         if lines_to_draw:
             json_str = json.dumps(lines_to_draw)
             js_command = f"""
-if(window.showSetupLines){{
-    window.showSetupLines(`{json_str}`);
-}}
-"""
+            if(window.showSetupLines){{
+                window.showSetupLines(`{json_str}`);
+            }}
+            """
             self.main_chart_view.page().runJavaScript(js_command)
 
     def display_nasdaq_analysis_details(self, a: dict):
@@ -1069,14 +1019,43 @@ if(window.showSetupLines){{
             QTimer.singleShot(1500, lambda: self.bitget_client.load_historical("ASSET", self.chart_interval, short_name))
             self.load_schema()
 
+    def check_gpu_status(self):
+        script = """
+        (function() {
+            var canvas = document.createElement('canvas');
+            var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            if (!gl) return 'NO_WEBGL';
+            var debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+            return debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : 'WEBGL_NO_DEBUG';
+        })();
+        """
+        if self.nasdaq_chart_view:
+            self.nasdaq_chart_view.page().runJavaScript(script, lambda res: print(f"[GPU CHECK] Renderer: {res}"))
+
     def closeEvent(self, event):
         self.bitget_client.stop()
         self.file_watcher.stop()
         event.accept()
 
-
 if __name__ == "__main__":
     os.environ["QTWEBENGINE_REMOTE_DEBUGGING"] = "9222"
+    
+    # POPRAWIONE FLAGI: 
+    # 1. Dodano spacje na końcu każdego ciągu, aby uniknąć błędu konkatenacji ("--disable-vulkan--disable...")
+    # 2. Zmieniono --use-gl-desktop na --use-gl=desktop
+    # 3. Dodano --allow-file-access-from-files, aby lokalny plik HTML mógł ładować zewnętrzne iframe/WebSockety
+    os.environ["LIBVA_DRIVER_NAME"] = "i965"
+    os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = (
+        "--enable-gpu-rasterization "
+        "--enable-zero-copy "
+        "--disable-vulkan "
+        "--disable-gpu-driver-bug-workarounds "
+        "--allow-file-access-from-files "
+        "--disable-web-security "                  # Wyłącza blokady CORS/Origin
+        "--allow-running-insecure-content "         # Pozwala na ładowanie zewnętrznych skryptów
+        "--no-sandbox "                             # Omija piaskownicę Chromium dla lokalnych plików
+    )
+    
     app = QApplication(sys.argv)
     QWebEngineProfile.defaultProfile().setHttpCacheType(QWebEngineProfile.HttpCacheType.DiskHttpCache)
     window = MainWindow()
