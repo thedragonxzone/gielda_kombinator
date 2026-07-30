@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 """
-NVDA (Bitget) + NASDAQ (TradingView widget) Trading Assistant
+Multi-Ticker (Bitget) + NASDAQ (TradingView widget) Trading Assistant
 - Panel boczny PO LEWEJ, wykresy PO PRAWEJ
-- NVDA: lightweight-charts z danymi z Bitget (WebSocket dla real-time) + strefy/setupy z JSON
-- NASDAQ: widget TradingView ładowany bezpośrednio przez HTTPS
-- POWIADOMIENIA: Alerty dźwiękowe (z włącznikiem) + Dynamiczny Tytuł Okna (X11/Pasek)
+- Bitget: lightweight-charts z danymi z Bitget Futures + strefy/setupy z pliku JSON przypisanego do wybranego wyciągu (np. TICKER_BITGET.json)
+- Wybór Tickerów w QComboBox + zapamiętywanie wyboru w config.json
 """
 import json
 import os
 import sys
 import time
 import requests
-import urllib.parse
 from pathlib import Path
 from typing import Dict, List
 
@@ -20,7 +18,7 @@ import websocket
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QSplitter, QLabel, QListWidget, QListWidgetItem,
-    QTextEdit, QFrame, QPushButton, QCheckBox
+    QTextEdit, QFrame, QPushButton, QCheckBox, QComboBox
 )
 from PyQt6.QtCore import (
     Qt, QThread, pyqtSignal, QObject, QTimer, QUrl
@@ -28,13 +26,23 @@ from PyQt6.QtCore import (
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebEngineCore import QWebEnginePage, QWebEngineProfile
 from PyQt6.QtGui import QFont, QTextCursor, QIcon
-from PyQt6.QtMultimedia import QSoundEffect  # Użyte do odtwarzania dźwięków WAV
+from PyQt6.QtMultimedia import QSoundEffect
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 # Mapowanie interwału UI na parametr Bitget REST API
 BITGET_INTERVAL_MAP = {
     "1m": "1m", "5m": "5m", "15m": "15m", "1h": "1H", "1d": "1D"
+}
+
+# CONFIG: Lista wspieranych tickerów
+# Klucz: Symbol w Bitget (instId) | Wartość: Skrócona nazwa (używana m.in. w strukturze plików JSON)
+AVAILABLE_TICKERS = {
+    "NVDAUSDT": "NVDA",
+    "SNDKUSDT": "SNDK",
+    "TSLAUSDT": "TSLA",
+    "BTCUSDT": "BTC",
+    "SOLUSDT": "SOL"
 }
 
 
@@ -45,13 +53,15 @@ class BitgetFuturesClient(QThread):
     historical_data_ready = pyqtSignal(str, str, str)
     realtime_update_ready = pyqtSignal(str, str, str)
     change_interval_signal = pyqtSignal(str, str)
+    change_ticker_signal = pyqtSignal(str, str)
 
-    def __init__(self):
+    def __init__(self, default_ticker="NVDAUSDT"):
         super().__init__()
         self.running = True
+        self.active_ticker = default_ticker
         
         self.monitored_assets = {
-            "NVDA": {"ticker": "NVDAUSDT", "interval": "1m", "last_ts": 0}
+            "ASSET": {"ticker": self.active_ticker, "interval": "1m", "last_ts": 0}
         }
 
         self.base_url = "https://api.bitget.com/api/v2/mix/market/candles"
@@ -59,6 +69,7 @@ class BitgetFuturesClient(QThread):
         self.ws = None
 
         self.change_interval_signal.connect(self._change_ws_subscription)
+        self.change_ticker_signal.connect(self._change_active_ticker)
 
     def fetch_candles(self, symbol: str, granularity: str, limit: int = 1000, end_time: int = None) -> List[list]:
         params = {
@@ -124,7 +135,7 @@ class BitgetFuturesClient(QThread):
             parsed_history.sort(key=lambda x: x["time"])
             self.monitored_assets[asset_id]["last_ts"] = parsed_history[-1]["time"]
             json_str = json.dumps(parsed_history)
-            print(f"[PYTHON] Pomyślnie załadowano {len(parsed_history)} świec do wykresu.")
+            print(f"[PYTHON] Pomyślnie załadowano {len(parsed_history)} świec do wykresu dla {symbol}.")
             self.historical_data_ready.emit(asset_id, json_str, ticker_name)
 
     def _get_channel_name(self, granularity: str) -> str:
@@ -141,8 +152,9 @@ class BitgetFuturesClient(QThread):
             "args": [{"instType": "USDT-FUTURES", "channel": channel, "instId": ticker}]
         }
         try:
-            self.ws.send(json.dumps(msg))
-            print(f"[WS] Subskrypcja: {ticker} / {channel}")
+            if self.ws and self.ws.sock and self.ws.sock.connected:
+                self.ws.send(json.dumps(msg))
+                print(f"[WS] Subskrypcja: {ticker} / {channel}")
         except Exception as e:
             print(f"[WS ERROR] Błąd wysyłania subskrypcji: {e}")
 
@@ -157,8 +169,9 @@ class BitgetFuturesClient(QThread):
             "args": [{"instType": "USDT-FUTURES", "channel": channel, "instId": ticker}]
         }
         try:
-            self.ws.send(json.dumps(msg))
-            print(f"[WS] Anulowanie subskrypcji: {ticker} / {channel}")
+            if self.ws and self.ws.sock and self.ws.sock.connected:
+                self.ws.send(json.dumps(msg))
+                print(f"[WS] Anulowanie subskrypcji: {ticker} / {channel}")
         except Exception as e:
             print(f"[WS ERROR] Błąd wysyłania unsubscribe: {e}")
 
@@ -168,6 +181,16 @@ class BitgetFuturesClient(QThread):
         self._unsubscribe(asset_id)
         self.monitored_assets[asset_id]["interval"] = new_interval
         self.monitored_assets[asset_id]["last_ts"] = 0
+        time.sleep(0.2)
+        self._subscribe(asset_id)
+
+    def _change_active_ticker(self, asset_id: str, new_ticker: str):
+        if asset_id not in self.monitored_assets:
+            return
+        self._unsubscribe(asset_id)
+        self.monitored_assets[asset_id]["ticker"] = new_ticker
+        self.monitored_assets[asset_id]["last_ts"] = 0
+        self.active_ticker = new_ticker
         time.sleep(0.2)
         self._subscribe(asset_id)
 
@@ -310,20 +333,27 @@ class WebEnginePageCustom(QWebEnginePage):
 
 
 class MainWindow(QMainWindow):
-    BASE_TITLE = "NVDA Conditioner"
+    BASE_TITLE = "Bitget Conditioner"
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle(self.BASE_TITLE)
         self.resize(1600, 950)
 
         self.base_dir = Path(__file__).resolve().parent
-        self.schema_path = self.base_dir / "dane_json_nvda.json"
-        print(f"[INFO] Ścieżka do JSON: {self.schema_path}")
+        self.config_path = self.base_dir / "config.json"
 
+        # Flaga opóźniająca powiadomienia na start / zmianę tickera
+        self.alerts_enabled = False
+        
+        # Uruchamiamy timer, który włączy alerty po 5 sekundach od startu programu
+        QTimer.singleShot(5000, self.enable_alerts)
+        
+        # Wczytanie ostatnio używanego tickera z pliku konfiguracyjnego
+        self.current_ticker = self.load_saved_ticker()
+        
         self.current_setup = None
-        self.nvda_interval = "1m"
-        self.nvda_ready = False
+        self.chart_interval = "1m"
+        self.chart_ready = False
         self.schema_data = None
 
         # --- KONFIGURACJA DŹWIĘKU I ALERTÓW ---
@@ -335,7 +365,7 @@ class MainWindow(QMainWindow):
         else:
             print(f"⚠️ [WARNING] Brak pliku dźwiękowego: {self.alert_sound_path}")
 
-        self.last_alert_state = False  # Przechowuje informację, czy przy poprzednim tyknięciu byliśmy w strefie
+        self.last_alert_state = False
 
         self.reload_timer = QTimer()
         self.reload_timer.setSingleShot(True)
@@ -343,16 +373,51 @@ class MainWindow(QMainWindow):
 
         self.init_ui()
 
-        self.bitget_client = BitgetFuturesClient()
+        self.bitget_client = BitgetFuturesClient(default_ticker=self.current_ticker)
         self.bitget_client.historical_data_ready.connect(self.on_historical_data)
         self.bitget_client.realtime_update_ready.connect(self.on_realtime_update)
         self.bitget_client.start()
 
         sciezka_ikony = self.base_dir / "gielda_kombinator.svg"
-        self.setWindowIcon(QIcon(str(sciezka_ikony)))
+        if sciezka_ikony.exists():
+            self.setWindowIcon(QIcon(str(sciezka_ikony)))
 
         self.file_watcher = SchemaWatcher(str(self.base_dir))
         self.file_watcher.file_changed.connect(self.on_file_changed)
+
+    def enable_alerts(self):
+        self.alerts_enabled = True
+        print("[INFO] Alerty dźwiękowe zostały aktywowane.")
+
+    def get_schema_path_for_ticker(self, ticker_symbol: str) -> Path:
+        """ Dynamiczne mapowanie pliku JSON dla wskazanego tickera """
+        short_name = AVAILABLE_TICKERS.get(ticker_symbol, "NVDA")
+        if short_name == "NVDA":
+            # Dla zachowania wstecznej kompatybilności domyślnego pliku
+            path = self.base_dir / "NVDA_BITGET.json"
+            if not path.exists():
+                path = self.base_dir / "NVDA_BITGET.json"
+            return path
+        return self.base_dir / f"{short_name}_BITGET.json"
+
+    def load_saved_ticker(self) -> str:
+        if self.config_path.exists():
+            try:
+                with open(self.config_path, "r", encoding="utf-8") as f:
+                    cfg = json.load(f)
+                    ticker = cfg.get("last_ticker")
+                    if ticker in AVAILABLE_TICKERS:
+                        return ticker
+            except Exception as e:
+                print(f"[CONFIG ERROR] Błąd wczytywania config.json: {e}")
+        return "NVDAUSDT"
+
+    def save_current_ticker(self):
+        try:
+            with open(self.config_path, "w", encoding="utf-8") as f:
+                json.dump({"last_ticker": self.current_ticker}, f, indent=2)
+        except Exception as e:
+            print(f"[CONFIG ERROR] Nie można zapisać config.json: {e}")
 
     def init_ui(self):
         main_widget = QWidget()
@@ -369,10 +434,33 @@ class MainWindow(QMainWindow):
         left_layout = QVBoxLayout(left_panel)
         left_layout.setContentsMargins(10, 10, 10, 10)
 
+        # --- SEKCJA WYBORU TICKERA ---
+        left_layout.addWidget(QLabel("Wybór Tickeru (Bitget):", styleSheet="color: #bac2de; font-weight: bold;"))
+        self.ticker_combo = QComboBox()
+        self.ticker_combo.setStyleSheet("""
+            QComboBox {
+                background-color: #181825; color: #cdd6f4; border: 1px solid #313244;
+                border-radius: 4px; padding: 5px; font-weight: bold;
+            }
+            QComboBox::drop-down { border: none; }
+            QComboBox QAbstractItemView {
+                background-color: #181825; color: #cdd6f4; selection-background-color: #313244;
+            }
+        """)
+        for sym, short in AVAILABLE_TICKERS.items():
+            self.ticker_combo.addItem(f"{sym} ({short})", sym)
+        
+        # Ustawienie wybranego tickera z configu
+        idx = self.ticker_combo.findData(self.current_ticker)
+        if idx >= 0:
+            self.ticker_combo.setCurrentIndex(idx)
+        self.ticker_combo.currentIndexChanged.connect(self.on_ticker_changed)
+        left_layout.addWidget(self.ticker_combo)
+
         # --- SEKCJA OPCJI (DŹWIĘK ON/OFF) ---
         self.sound_checkbox = QCheckBox("🔊 Dźwięk powiadomień Entry")
-        self.sound_checkbox.setChecked(True)
-        self.sound_checkbox.setStyleSheet("color: #a6e3a1; font-weight: bold; margin-bottom: 5px;")
+        self.sound_checkbox.setChecked(False)
+        self.sound_checkbox.setStyleSheet("color: #a6e3a1; font-weight: bold; margin-top: 5px; margin-bottom: 5px;")
         left_layout.addWidget(self.sound_checkbox)
 
         self.macro_label = QLabel("Sentyment: N/A")
@@ -406,7 +494,10 @@ class MainWindow(QMainWindow):
         self.ranges_list.itemClicked.connect(self.on_range_selected)
         lists_layout.addWidget(self.ranges_list)
 
-        lists_layout.addWidget(QLabel("Dostępne Strategie NVDA (Setups):", styleSheet="color: #bac2de; font-weight: bold;"))
+        self.setups_label = QLabel(f"Dostępne Strategie {AVAILABLE_TICKERS.get(self.current_ticker)} (Setups):")
+        self.setups_label.setStyleSheet("color: #bac2de; font-weight: bold;")
+        lists_layout.addWidget(self.setups_label)
+
         self.setups_list = QListWidget()
         self.setups_list.setStyleSheet(
             "background-color: #181825; color: #cdd6f4; border: 1px solid #313244; border-radius: 4px;"
@@ -437,20 +528,20 @@ class MainWindow(QMainWindow):
         chart_splitter = QSplitter(Qt.Orientation.Vertical)
         chart_splitter.setStyleSheet("background-color: #11111b; QSplitter::handle { background-color: #313244; }")
 
-        self.nvda_container = QWidget()
-        nvda_lay = QVBoxLayout(self.nvda_container)
-        nvda_lay.setContentsMargins(0, 0, 0, 0)
-        nvda_lay.setSpacing(0)
+        self.chart_container = QWidget()
+        chart_lay = QVBoxLayout(self.chart_container)
+        chart_lay.setContentsMargins(0, 0, 0, 0)
+        chart_lay.setSpacing(0)
 
-        self.nvda_label = QLabel("NVDAUSDT (Bitget Futures) - Interwał: 1m")
-        self.nvda_label.setStyleSheet("background-color: #11111b; color: #a6adc8; padding: 6px; font-weight: bold;")
-        self.nvda_label.setFixedHeight(28)
-        self.nvda_chart_view = QWebEngineView()
-        self.nvda_page = WebEnginePageCustom(self, "NVDA")
-        self.nvda_chart_view.setPage(self.nvda_page)
+        self.chart_label = QLabel(f"{self.current_ticker} (Bitget Futures) - Interwał: {self.chart_interval}")
+        self.chart_label.setStyleSheet("background-color: #11111b; color: #a6adc8; padding: 6px; font-weight: bold;")
+        self.chart_label.setFixedHeight(28)
+        self.main_chart_view = QWebEngineView()
+        self.main_page = WebEnginePageCustom(self, "ASSET")
+        self.main_chart_view.setPage(self.main_page)
 
-        nvda_lay.addWidget(self.nvda_label)
-        nvda_lay.addWidget(self.nvda_chart_view, stretch=1)
+        chart_lay.addWidget(self.chart_label)
+        chart_lay.addWidget(self.main_chart_view, stretch=1)
 
         self.nasdaq_container = QWidget()
         nasdaq_lay = QVBoxLayout(self.nasdaq_container)
@@ -495,7 +586,7 @@ class MainWindow(QMainWindow):
         self.nasdaq_chart_view = None
         self.tv_is_active = False
 
-        chart_splitter.addWidget(self.nvda_container)
+        chart_splitter.addWidget(self.chart_container)
         chart_splitter.addWidget(self.nasdaq_container)
         chart_splitter.setCollapsible(0, False)
         chart_splitter.setCollapsible(1, False)
@@ -506,9 +597,15 @@ class MainWindow(QMainWindow):
         main_splitter.setSizes([420, 1180])
         main_layout.addWidget(main_splitter, stretch=1)
 
-        nvda_html_path = self.base_dir / "chart.html"
-        self.nvda_chart_view.setUrl(QUrl.fromLocalFile(str(nvda_html_path)))
-        self.nvda_chart_view.loadFinished.connect(self.on_nvda_chart_load_finished)
+        chart_html_path = self.base_dir / "chart.html"
+        self.main_chart_view.setUrl(QUrl.fromLocalFile(str(chart_html_path)))
+        self.main_chart_view.loadFinished.connect(self.on_chart_load_finished)
+
+        self.update_window_title()
+
+    def update_window_title(self):
+        short_name = AVAILABLE_TICKERS.get(self.current_ticker, self.current_ticker)
+        self.setWindowTitle(f"[{short_name}] - {self.BASE_TITLE}")
 
     def generate_tradingview_html(self) -> str:
         settings = {
@@ -596,15 +693,36 @@ try {{
                 QPushButton:hover { background-color: #eba0ac; }
             """)
 
+    def on_ticker_changed(self, index: int):
+        new_ticker = self.ticker_combo.itemData(index)
+        if not new_ticker or new_ticker == self.current_ticker:
+            return
+
+        print(f"[UI] Zmiana wybranego waloru: {self.current_ticker} -> {new_ticker}")
+        self.current_ticker = new_ticker
+        self.save_current_ticker()
+
+        short_name = AVAILABLE_TICKERS.get(new_ticker, new_ticker)
+        self.setups_label.setText(f"Dostępne Strategie {short_name} (Setups):")
+        self.chart_label.setText(f"{self.current_ticker} (Bitget Futures) - Interwał: {self.chart_interval}")
+        self.update_window_title()
+
+        # Powiadom klienta WebSocket o nowym tickerze
+        self.bitget_client.change_ticker_signal.emit("ASSET", self.current_ticker)
+        
+        # Pobierz nową historię i załaduj właściwy JSON
+        if self.chart_ready:
+            self.bitget_client.load_historical("ASSET", self.chart_interval, short_name)
+            self.reset_and_load_schema()
+
     def handle_interval_change(self, asset_id: str, new_interval: str):
-        if asset_id == "NVDA":
-            self.nvda_interval = new_interval
-            self.nvda_label.setText(f"NVDAUSDT (Bitget Futures) - Interwał: {new_interval}")
-            self.bitget_client.change_interval_signal.emit(asset_id, new_interval)
-            self.bitget_client.load_historical("NVDA", new_interval, "NVDA")
+        self.chart_interval = new_interval
+        self.chart_label.setText(f"{self.current_ticker} (Bitget Futures) - Interwał: {new_interval}")
+        self.bitget_client.change_interval_signal.emit("ASSET", new_interval)
+        self.bitget_client.load_historical("ASSET", new_interval, AVAILABLE_TICKERS.get(self.current_ticker, "ASSET"))
 
     def on_historical_data(self, asset_id: str, data_json: str, ticker_name: str):
-        if asset_id == "NVDA" and self.nvda_ready:
+        if self.chart_ready:
             js_code = f"""
 if (typeof window.loadHistoricalData === 'function') {{
     window.loadHistoricalData(`{data_json}`);
@@ -612,10 +730,10 @@ if (typeof window.loadHistoricalData === 'function') {{
     console.log('DEBUG_JS: loadHistoricalData jeszcze nie jest gotowe.');
 }}
 """
-            self.nvda_chart_view.page().runJavaScript(js_code)
+            self.main_chart_view.page().runJavaScript(js_code)
 
     def on_realtime_update(self, asset_id: str, bar_json: str, ticker_name: str):
-        if asset_id == "NVDA" and self.nvda_ready:
+        if self.chart_ready:
             js_code = f"""
 if (typeof window.updateRealTimeBar === 'function') {{
     window.updateRealTimeBar(`{bar_json}`);
@@ -623,9 +741,8 @@ if (typeof window.updateRealTimeBar === 'function') {{
     console.log('DEBUG_JS: updateRealTimeBar jeszcze nie jest gotowe.');
 }}
 """
-            self.nvda_chart_view.page().runJavaScript(js_code)
+            self.main_chart_view.page().runJavaScript(js_code)
 
-            # --- SPRAWDZANIE WARUNKÓW STRATEGII W REAL-TIME ---
             try:
                 bar = json.loads(bar_json)
                 current_price = bar.get("close")
@@ -634,17 +751,12 @@ if (typeof window.updateRealTimeBar === 'function') {{
             except Exception as e:
                 print(f"[ERROR] Błąd sprawdzania warunków stref: {e}")
 
-    # =========================================================================
-    # LOGIKA SPRRAWDZANIA STREF I ALERTÓW
-    # =========================================================================
     def check_execution_zones(self, current_price: float):
-        """
-        Sprawdza cenę wobec zaznaczonych setupów w UI i wyzwala dźwięk oraz zmianę na belce.
-        """
+        if not self.alerts_enabled:
+            return
         in_any_entry_zone = False
         active_setup_name = ""
 
-        # Iterujemy po wszystkich ustawieniach zaznaczonych ptaszkiem (Checked)
         for i in range(self.setups_list.count()):
             item = self.setups_list.item(i)
             if item.checkState() == Qt.CheckState.Checked:
@@ -655,41 +767,38 @@ if (typeof window.updateRealTimeBar === 'function') {{
                 entry_zone = setup.get("execution", {}).get("entry_zone", [])
                 if len(entry_zone) == 2:
                     bottom, top = float(entry_zone[0]), float(entry_zone[1])
-                    # Jeżeli zakres podany jest odwrotnie, porządkujemy:
                     if bottom > top:
                         bottom, top = top, bottom
 
                     if bottom <= current_price <= top:
                         in_any_entry_zone = True
                         active_setup_name = setup.get("name", "Setup")
-                        break  # Wykryto strefę, wystarczy
+                        break
 
-        # Zmiana tytułu okna (X11/Pasek zadań)
+        short_name = AVAILABLE_TICKERS.get(self.current_ticker, self.current_ticker)
         if in_any_entry_zone:
-            self.setWindowTitle(f"🚨 [ENTRY ALERT: {active_setup_name} | {current_price:.2f}] - {self.BASE_TITLE}")
+            self.setWindowTitle(f"🚨 [ENTRY ALERT: {active_setup_name} | {current_price:.2f}] - [{short_name}] {self.BASE_TITLE}")
         else:
-            self.setWindowTitle(self.BASE_TITLE)
+            self.update_window_title()
 
-        # Odtwarzanie dźwięku powiadomienia (zbocze narastające: z poza strefy -> do strefy)
         if in_any_entry_zone and not self.last_alert_state:
             if self.sound_checkbox.isChecked() and self.alert_sound_path.exists():
                 self.sound_effect.play()
             QApplication.alert(self, 0)
 
-        # Zapisz obecny stan na potrzeby kolejnego ticka
         self.last_alert_state = in_any_entry_zone
 
     def reset_and_load_schema(self):
-        print("[WATCHDOG] Wykryto zmianę pliku JSON. Resetowanie stanu do zera...")
+        print(f"[WATCHDOG/RESET] Przeładowanie schematu JSON dla {self.current_ticker}...")
         self.current_setup = None
         self.schema_data = None
         self.macro_label.setText("Sentyment: N/A | F&G: N/A")
         self.market_context_box.clear()
         self.details_box.clear()
 
-        if self.nvda_ready:
-            self.nvda_chart_view.page().runJavaScript("if(window.hideRangeLines){window.hideRangeLines();}")
-            self.nvda_chart_view.page().runJavaScript("if(window.hideSetupLines){window.hideSetupLines();}")
+        if self.chart_ready:
+            self.main_chart_view.page().runJavaScript("if(window.hideRangeLines){window.hideRangeLines();}")
+            self.main_chart_view.page().runJavaScript("if(window.hideSetupLines){window.hideSetupLines();}")
 
         self.ranges_list.blockSignals(True)
         self.ranges_list.clear()
@@ -702,11 +811,12 @@ if (typeof window.updateRealTimeBar === 'function') {{
         self.load_schema()
 
     def load_schema(self):
-        if not self.schema_path.exists():
-            print(f"⚠️ [BŁĄD] Nie znaleziono pliku JSON pod ścieżką: {self.schema_path}")
+        schema_path = self.get_schema_path_for_ticker(self.current_ticker)
+        if not schema_path.exists():
+            print(f"⚠️ [BŁĄD] Nie znaleziono pliku JSON pod ścieżką: {schema_path}")
             return
         try:
-            with open(self.schema_path, "r", encoding="utf-8") as f:
+            with open(schema_path, "r", encoding="utf-8") as f:
                 self.schema_data = json.load(f)
 
             env = self.schema_data.get("macro_environment", {})
@@ -757,15 +867,16 @@ if (typeof window.updateRealTimeBar === 'function') {{
                 item.setData(Qt.ItemDataRole.UserRole, {"type": "nasdaq_analysis", "data": a})
                 self.ranges_list.addItem(item)
 
-        nvda_ranges = self.schema_data.get("assets", {}).get("NVDA", {}).get("price_ranges", [])
-        for r in nvda_ranges:
+        asset_short = AVAILABLE_TICKERS.get(self.current_ticker, "NVDA")
+        asset_ranges = self.schema_data.get("assets", {}).get(asset_short, {}).get("price_ranges", [])
+        for r in asset_ranges:
             item = QListWidgetItem(r['name'])
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             if not checked_ids or r["id"] in checked_ids:
                 item.setCheckState(Qt.CheckState.Checked)
             else:
                 item.setCheckState(Qt.CheckState.Unchecked)
-            item.setData(Qt.ItemDataRole.UserRole, {"type": "nvda_range", "data": r})
+            item.setData(Qt.ItemDataRole.UserRole, {"type": "asset_range", "data": r})
             self.ranges_list.addItem(item)
 
         self.ranges_list.blockSignals(False)
@@ -781,7 +892,8 @@ if (typeof window.updateRealTimeBar === 'function') {{
         current_row = self.setups_list.currentRow()
         self.setups_list.clear()
 
-        setups = self.schema_data.get("assets", {}).get("NVDA", {}).get("setups", [])
+        asset_short = AVAILABLE_TICKERS.get(self.current_ticker, "NVDA")
+        setups = self.schema_data.get("assets", {}).get(asset_short, {}).get("setups", [])
         for s in setups:
             item = QListWidgetItem(f"{s['name']} ({s['bias']})")
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
@@ -809,7 +921,7 @@ if (typeof window.updateRealTimeBar === 'function') {{
         data = role_data.get("data")
         if item_type == "nasdaq_analysis":
             self.display_nasdaq_analysis_details(data)
-        elif item_type == "nvda_range":
+        elif item_type == "asset_range":
             self.display_range_details(data)
 
     def on_setup_visibility_changed(self, item):
@@ -821,15 +933,15 @@ if (typeof window.updateRealTimeBar === 'function') {{
         self.display_setup_details(setup)
 
     def redraw_ranges(self):
-        if not self.nvda_ready:
+        if not self.chart_ready:
             return
-        self.nvda_chart_view.page().runJavaScript("if(window.hideRangeLines){window.hideRangeLines();}")
+        self.main_chart_view.page().runJavaScript("if(window.hideRangeLines){window.hideRangeLines();}")
 
         for i in range(self.ranges_list.count()):
             item = self.ranges_list.item(i)
             if item.checkState() == Qt.CheckState.Checked:
                 role_data = item.data(Qt.ItemDataRole.UserRole)
-                if role_data and role_data.get("type") == "nvda_range":
+                if role_data and role_data.get("type") == "asset_range":
                     r = role_data.get("data")
                     zone_info = [
                         {
@@ -851,13 +963,13 @@ if(window.showRangeLines){{
     window.showRangeLines(`{json_str}`);
 }}
 """
-                    self.nvda_chart_view.page().runJavaScript(js_command)
+                    self.main_chart_view.page().runJavaScript(js_command)
 
     def redraw_setups(self):
-        if not self.nvda_ready:
+        if not self.chart_ready:
             return
 
-        self.nvda_chart_view.page().runJavaScript("if(window.hideSetupLines){window.hideSetupLines();}")
+        self.main_chart_view.page().runJavaScript("if(window.hideSetupLines){window.hideSetupLines();}")
 
         lines_to_draw = []
         for i in range(self.setups_list.count()):
@@ -915,7 +1027,7 @@ if(window.showSetupLines){{
     window.showSetupLines(`{json_str}`);
 }}
 """
-            self.nvda_chart_view.page().runJavaScript(js_command)
+            self.main_chart_view.page().runJavaScript(js_command)
 
     def display_nasdaq_analysis_details(self, a: dict):
         text = f"=== ANALIZA NASDAQ: {a['name']} ===\n"
@@ -934,9 +1046,10 @@ if(window.showSetupLines){{
 
     def display_setup_details(self, s: dict):
         cond = s.get("conditions", {})
+        short_name = AVAILABLE_TICKERS.get(self.current_ticker, "ASSET")
         text = f"=== STRATEGIA: {s['name']} ===\n"
         text += f"Kierunek (Bias): {s['bias']}\n"
-        text += f"NVDA Trigger Zone: {cond.get('trigger_zone')}\n"
+        text += f"{short_name} Trigger Zone: {cond.get('trigger_zone')}\n"
         text += f"Trigger: {cond.get('trigger_condition')}\n"
         text += f"📊 Warunek konfirmacji NASDAQ:\n"
         text += f"  Cena: {cond.get('nasdaq_confirmation_price')}\n"
@@ -949,10 +1062,11 @@ if(window.showSetupLines){{
         self.details_box.setPlainText(text)
         self.details_box.moveCursor(QTextCursor.MoveOperation.Start)
 
-    def on_nvda_chart_load_finished(self, ok):
+    def on_chart_load_finished(self, ok):
         if ok:
-            self.nvda_ready = True
-            QTimer.singleShot(1500, lambda: self.bitget_client.load_historical("NVDA", self.nvda_interval, "NVDA"))
+            self.chart_ready = True
+            short_name = AVAILABLE_TICKERS.get(self.current_ticker, "NVDA")
+            QTimer.singleShot(1500, lambda: self.bitget_client.load_historical("ASSET", self.chart_interval, short_name))
             self.load_schema()
 
     def closeEvent(self, event):

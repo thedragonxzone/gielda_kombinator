@@ -1,0 +1,130 @@
+{
+  "metadata": {
+    "timestamp": "2026-07-30T12:05:00+08:00",
+    "primary_ticker": "SNDK",
+    "macro_ticker": "NQ=F"
+  },
+  "macro_environment": {
+    "fear_and_greed_index": 30,
+    "market_sentiment": "high-volatility_stretched_bearish"
+  },
+  "assets": {
+    "NASDAQ": {
+      "sentiment": "neutral-cautious_consolidation",
+      "key_gatekeeper_level": 28100.00,
+      "analyses": [
+        {
+          "id": "nasdaq_analysis_01",
+          "name": "Korelacja z NASDAQ i Sektorem Półprzewodników dla SNDK",
+          "description": "SNDKUSDT odzwierciedla tokenizowany walor SanDisk, przez co jego głównym motorem jest rynek akcji w USA. Aktualna cena referencyjna wynosi $1,008.45 (-9.85% na sesji), po szerokim handlu intraday w przedziale $970.79–$1,124.80. Wyjątkowo wysoka zmienność niesie ze sobą ryzyko znacznego poślizgu cenowego przy zleceniach rynkowych i wysokiej dźwigni. SNDK wykazuje dodatnią, lecz niestabilną korelację z indeksem NASDAQ-100 (jako spótka półprzewodnikowa o wysokim współczynniku beta). Samo odbicie NASDAQ nie wystarczy do trwałego wzrostu – wymagane jest potwierdzenie ze strony całego sektora chipów."
+        },
+        {
+          "id": "nasdaq_sentiment_news_02",
+          "name": "Struktura Rynku, Przepływy Kapitałowe i Ryzyko",
+          "description": "Ostatnie wyprzedaże w sektorze pamięci AI były napędzane presją ze strony inwestorów detalicznych (odpowiadających za ~88% presji sprzedażowej w tym segmencie). Mimo że duzi gracze otworzyli pozycje długie na SNDK i spółki pamięciowe (m.in. pozycja ~$4.86M w ramach szerszego koszyka S&P 500), ekspozycja ta wykazuje niezrealizowaną stratę i nie stanowi twardego dna. Struktura techniczna wskazuje na przełamaną formację głowy z ramionami (H&S) oraz poziom docelowy spadków blisko $995. Wytrzymanie strefy $970–$995 stwarza szansę na dwukierunkowy handel."
+        }
+      ]
+    },
+    "SNDK": {
+      "current_price": 1008.45,
+      "price_ranges": [
+        {
+          "id": "range_base_01",
+          "name": "Najbardziej Prawdopodobny Zakres Handlu (Near-Term Range)",
+          "support_zone": [970.00, 995.00],
+          "resistance_zone": [1025.00, 1045.00],
+          "timeframe": "15m",
+          "color": "#89dceb",
+          "description": "Główny pas roboczy pomiędzy dołkiem sesyjnym $970–$985 / wsparciem $995–$1,008 a strefą oporu korekcyjnego $1,025–$1,045."
+        },
+        {
+          "id": "range_bullish_02",
+          "name": "Wzrostowa Strefa Odzyskania (Recovery Zone)",
+          "support_zone": [1045.00, 1065.00],
+          "resistance_zone": [1095.00, 1125.00],
+          "timeframe": "1h",
+          "color": "#a6e3a1",
+          "description": "Zakres aktywowany po zamknięciu świecy powyżej $1,045, otwierający przestrzeń do odbicia w stronę $1,095–$1,125."
+        },
+        {
+          "id": "range_bearish_03",
+          "name": "Spadkowa Strefa Wybiciowa (Breakdown Expansion)",
+          "support_zone": [895.00, 950.00],
+          "resistance_zone": [964.00, 970.00],
+          "timeframe": "1h",
+          "color": "#f38ba8",
+          "description": "Strefa uaktywniana po trwałym przełamaniu dołka sesyjnego $970, otwierająca drogę do targetu $930–$950 oraz rozszerzonego celu $895–$915."
+        }
+      ],
+      "setups": [
+        {
+          "id": "setup_sndk_long_support_reclaim_01",
+          "name": "LONG: Odzyskanie Wsparcia (Support-Reclaim Trade)",
+          "bias": "LONG",
+          "conditions": {
+            "trigger_zone": [985.00, 995.00],
+            "trigger_condition": "test popytowego przedziału $970–$995 zakończony zamknięciem świecy 15m z powrotem powyżej $995",
+            "nasdaq_confirmation_price": 28100.0,
+            "nasdaq_confirmation_condition": "NASDAQ-100 utrzymuje otwarcie, a sektor spółek półprzewodnikowych wykazuje stabilizację"
+          },
+          "execution": {
+            "entry_zone": [985.00, 995.00],
+            "stop_loss_zone": [958.00, 958.00],
+            "take_profit_zones": [
+              [1025.00, 1025.00],
+              [1075.00, 1075.00]
+            ]
+          },
+          "commentary": "Zagranie na odbicie od strefy popytowej. Dla średniego wejścia ~$990 TP1 oferuje ok. +3.5% zysku (służy do zamknięcia min. 50% pozycji i przestawienia SL na entry), a stop znajduje się -3.2% poniżej ceny wejścia. Zamknięcie świecy 15m poniżej $970 unieważnia setup."
+        },
+        {
+          "id": "setup_sndk_short_failed_rebound_02",
+          "name": "SHORT A: Nieudane Odbicie (Failed-Rebound Trade)",
+          "bias": "SHORT",
+          "conditions": {
+            "trigger_zone": [1028.00, 1045.00],
+            "trigger_condition": "podejście ceny pod strefę $1,028–$1,045 z brakiem siły na wyjście powyżej $1,045 i zamknięciem świecy 15m poniżej $1,028",
+            "nasdaq_confirmation_price": 28100.0,
+            "nasdaq_confirmation_condition": "NASDAQ-100 wybija dołki intraday lub sektor chipów pogłębia spadki"
+          },
+          "execution": {
+            "entry_zone": [1028.00, 1045.00],
+            "stop_loss_zone": [1065.00, 1065.00],
+            "take_profit_zones": [
+              [995.00, 995.00],
+              [970.00, 970.00]
+            ]
+          },
+          "commentary": "Główny setup na sprzedaż fal odbiciowych pod trend spadkowy. Przy entry ~$1,036 TP1 daje ~4.0% zysku, a stop loss wynosi ~2.8%. Zamknięcie świecy 15m powyżej $1,065 unieważnia scenariusz niedźwiedzi."
+        },
+        {
+          "id": "setup_sndk_short_breakdown_03",
+          "name": "SHORT B: Kontynuacja Wyłamania (Breakdown Short Alternative)",
+          "bias": "SHORT",
+          "conditions": {
+            "trigger_zone": [964.00, 968.00],
+            "trigger_condition": "utrata wsparcia $970 na rosnącym wolumenie oraz nieudana próba retestu tego poziomu od dołu",
+            "nasdaq_confirmation_price": 28100.0,
+            "nasdaq_confirmation_condition": "dalsze pogłębianie spadków na indeksie NASDAQ-100"
+          },
+          "execution": {
+            "entry_zone": [964.00, 968.00],
+            "stop_loss_zone": [995.00, 995.00],
+            "take_profit_zones": [
+              [940.00, 940.00],
+              [915.00, 915.00]
+            ]
+          },
+          "commentary": "Alternatywny setup spadkowy aktywowany dopiero po złamaniu dołka sesyjnego $970. Wymagany nieudany retest od dołu, aby uniknąć sprzedaży w wyprzedane dołki."
+        }
+      ],
+      "correlation_context": {
+        "divergence_warning": {
+          "is_active": true,
+          "type": "high_beta_unstable_correlation",
+          "description": "Przy obecnej cenie $1,008.45 rynek jest mocno rozciągnięty po gwałtownej wyprzedaży. Unikać jednoczesnej aktywacji zleceń po obu stronach rynku oraz czekać na potwierdzenie sygnału na interwale 15m w wyznaczonych strefach egzekucyjnych."
+        }
+      }
+    }
+  }
+}
