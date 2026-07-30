@@ -10,6 +10,7 @@ import os
 import sys
 import time
 import requests
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List
 import websocket
@@ -37,7 +38,8 @@ BITGET_INTERVAL_MAP = {
 AVAILABLE_TICKERS = {
     "NVDAUSDT": "NVDA",
     "SNDKUSDT": "SNDK",
-    "TSLAUSDT": "TSLA",
+    "MUUSDT": "MU",
+
     "BTCUSDT": "BTC",
     "SOLUSDT": "SOL"
 }
@@ -430,6 +432,14 @@ class MainWindow(QMainWindow):
         self.macro_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         self.macro_label.setStyleSheet("color: #cdd6f4;")
         left_layout.addWidget(self.macro_label)
+
+        # --- NOWY LABEL: Czas modyfikacji pliku JSON ---
+        self.json_time_label = QLabel("JSON mod: N/A")
+        self.json_time_label.setFont(QFont("Ubuntu", 14))
+        self.json_time_label.setStyleSheet("color: #a6adc8; margin-bottom: 5px;")
+        left_layout.addWidget(self.json_time_label)
+        # ---------------------------------------------
+
         
         left_layout.addWidget(QLabel("Kontekst Rynkowy (NASDAQ):", styleSheet="color: #bac2de; font-weight: bold;"))
         self.market_context_box = QTextEdit()
@@ -761,6 +771,14 @@ class MainWindow(QMainWindow):
         self.setups_list.blockSignals(True)
         self.setups_list.clear()
         self.setups_list.blockSignals(False)
+
+        print(f"[WATCHDOG/RESET] Przeładowanie schematu JSON dla {self.current_ticker}...")
+        self.current_setup = None
+        self.schema_data = None
+        self.macro_label.setText("Sentyment: N/A | F&G: N/A")
+        self.json_time_label.setText("JSON mod: Wczytywanie...") # <-- Dodaj tę linię
+        self.market_context_box.clear()
+        self.details_box.clear()
         
         self.load_schema()
 
@@ -768,8 +786,26 @@ class MainWindow(QMainWindow):
         schema_path = self.get_schema_path_for_ticker(self.current_ticker)
         if not schema_path.exists():
             print(f"⚠️ [BŁĄD] Nie znaleziono pliku JSON pod ścieżką: {schema_path}")
+            self.json_time_label.setText("JSON mod: Brak pliku")
             return
         try:
+            # --- POBRANIE I FORMATOWANIE DATY MODYFIKACJI PLIKU ---
+            mtime = schema_path.stat().st_mtime
+            
+            # FORMATOWANIE DATY (Modyfikuj ciąg w strftime wedle uznania):
+            # %R     -> HH:MM (np. 14:35)
+            # %T     -> HH:MM:SS (np. 14:35:09)
+            # %d.%m  -> Dzień.Miesiąc (np. 28.05)
+            # %Y     -> Rok (np. 2026)
+            #
+            # Przykłady:
+            # formatted_time = datetime.fromtimestamp(mtime).strftime("%d.%m.%Y %H:%M:%S") # 28.05.2026 14:35:09
+            # formatted_time = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M")    # 2026-05-28 14:35
+            
+            formatted_time = datetime.fromtimestamp(mtime).strftime("%d.%m.%Y %H:%M:%S")
+            self.json_time_label.setText(f"JSON mod: {formatted_time}")
+            # -----------------------------------------------------
+
             with open(schema_path, "r", encoding="utf-8") as f:
                 self.schema_data = json.load(f)
             
@@ -1040,20 +1076,22 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     os.environ["QTWEBENGINE_REMOTE_DEBUGGING"] = "9222"
     
-    # POPRAWIONE FLAGI: 
-    # 1. Dodano spacje na końcu każdego ciągu, aby uniknąć błędu konkatenacji ("--disable-vulkan--disable...")
-    # 2. Zmieniono --use-gl-desktop na --use-gl=desktop
-    # 3. Dodano --allow-file-access-from-files, aby lokalny plik HTML mógł ładować zewnętrzne iframe/WebSockety
-    os.environ["LIBVA_DRIVER_NAME"] = "i965"
+    # 1. Wyłączenie wadliwego sterownika VA-API, który wywołuje błąd i965_drv_video
+    if "LIBVA_DRIVER_NAME" in os.environ:
+        del os.environ["LIBVA_DRIVER_NAME"]
+
+    # 2. Flagi eliminujące błędy DRM i965 / GEM_APERTURE
     os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = (
+        "--use-gl=egl "                           # Przełączenie z GL Desktop na stabilny EGL
+        "--ignore-gpu-blocklist "
         "--enable-gpu-rasterization "
-        "--enable-zero-copy "
         "--disable-vulkan "
         "--disable-gpu-driver-bug-workarounds "
+        "--disable-accelerated-video-decode "     # Wyłącza sprzętowe wideo, zapobiegając błędom libva
         "--allow-file-access-from-files "
-        "--disable-web-security "                  # Wyłącza blokady CORS/Origin
-        "--allow-running-insecure-content "         # Pozwala na ładowanie zewnętrznych skryptów
-        "--no-sandbox "                             # Omija piaskownicę Chromium dla lokalnych plików
+        "--disable-web-security "
+        "--allow-running-insecure-content "
+        "--no-sandbox "
     )
     
     app = QApplication(sys.argv)

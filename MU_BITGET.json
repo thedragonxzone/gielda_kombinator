@@ -1,0 +1,150 @@
+{
+  "metadata": {
+    "timestamp": "2026-07-29T16:38:00+08:00",
+    "primary_ticker": "MU",
+    "macro_ticker": "NQ=F"
+  },
+  "macro_environment": {
+    "fear_and_greed_index": 30,
+    "market_sentiment": "mixed-range_rebound"
+  },
+  "assets": {
+    "NASDAQ": {
+      "sentiment": "neutral-cautious_consolidation",
+      "key_gatekeeper_level": 28100.00,
+      "analyses": [
+        {
+          "id": "nasdaq_analysis_01",
+          "name": "Sytuacja Rynkowa, Korelacja i Filtrowanie dla MU",
+          "description": "MU notuje znaczne spadki (-9.74%) w przedziale $715.50–$732.20 pod presją wyprzedaży w sektorze półprzewodników i szerokiego spadku NASDAQ (-1.74%). Bet-a spółki jest obecnie bardzo wysoka (~5.6x w stosunku do ruchu indeksu), co oznacza, że MU działa jako zapośredniczony wskaźnik siły całego sektora chipów. NASDAQ/QQQ pełni rolę filtra egzekucyjnego: stabilizacja NASDAQ powyżej intraday VWAP/środka zakresu otwarcia wspiera scenariusze wzrostowe na MU, podczas gdy dalsze pogłębianie dołków przez indeks drastycznie zwiększa ryzyko niepowodzenia odbić od wsparć."
+        },
+        {
+          "id": "nasdaq_sentiment_news_02",
+          "name": "Aktualny Sentyment i Wiadomości Rynkowe (AI / Memory / Pozycjonowanie Rynku)",
+          "description": "Fundamentalnie spółka wykazała silne wyniki kwartalne ($41.46 mld przychodu, $28.24 mld zysku netto oraz niski dług do kapitału własnego 0.06). Mimo to krótkoterminowy sentyment pozostaje spadkowy z powodu realizacji zysków, czyszczenia pozycji w spółkach technologicznych oraz wyprzedaży ze strony inwestorów detalicznych na akcjach z sektora pamięci AI. Poruszanie się poniżej kluczowego poziomu odniesienia $739–$740 premiuje podaż na odbiciach."
+        }
+      ]
+    },
+    "MU": {
+      "current_price": 729.06,
+      "price_ranges": [
+        {
+          "id": "range_intraday_01",
+          "name": "Bazowa Konsolidacja Intraday (Base Range)",
+          "support_zone": [715.00, 720.00],
+          "resistance_zone": [732.00, 740.00],
+          "timeframe": "15m",
+          "color": "#89dceb",
+          "description": "Glówny zakres operacyjny w przypadku braku trwałego przełamania $715.50 lub odzyskania strefy $740.00."
+        },
+        {
+          "id": "range_bullish_02",
+          "name": "Wzrostowa Ekspansja (Recovery Extension)",
+          "support_zone": [740.00, 740.00],
+          "resistance_zone": [750.00, 755.00],
+          "timeframe": "1h",
+          "color": "#a6e3a1",
+          "description": "Strefa po potwierdzonym wyjściu powyżej pivotu $739.00–$740.00 przy braku presji ze strony NASDAQ."
+        },
+        {
+          "id": "range_bearish_03",
+          "name": "Spadkowa Ekspansja (Bearish Extension)",
+          "support_zone": [695.00, 705.00],
+          "resistance_zone": [715.00, 717.00],
+          "timeframe": "1h",
+          "color": "#f38ba8",
+          "description": "Zakres aktywowany po potwierdzonym przełamaniu sesyjnego dołka $715.50, otwierający drogę w stronę $705.00–$696.00."
+        }
+      ],
+      "setups": [
+        {
+          "id": "setup_mu_long_support_rebound_01",
+          "name": "LONG A: Odbicie od Wsparcia (Support Rebound)",
+          "bias": "LONG",
+          "conditions": {
+            "trigger_zone": [715.50, 718.00],
+            "trigger_condition": "test strefy $715.50–$718.00 i powrót (zamknięcie świecy 15m) powyżej $720.00",
+            "nasdaq_confirmation_price": 28100.0,
+            "nasdaq_confirmation_condition": "NASDAQ wyhamowuje spadki i nie wyznacza nowych dołków intraday"
+          },
+          "execution": {
+            "entry_zone": [718.00, 721.00],
+            "stop_loss_zone": [709.50, 709.50],
+            "take_profit_zones": [
+              [732.00, 732.00],
+              [739.00, 739.00]
+            ]
+          },
+          "commentary": "Kupno na odbiciu od wsparcia sesyjnego. Przy orientacyjnym wejściu $719.50 ryzyko wynosi ~$10.00, TP1 to ~$12.50 zysku (R/R ~1.25:1), a TP2 to ~$19.50 zysku (R/R ~1.95:1). Przebicie $709.50 unieważnia setup."
+        },
+        {
+          "id": "setup_mu_long_breakout_02",
+          "name": "LONG B: Potwierdzenie Wybicia (Breakout Confirmation)",
+          "bias": "LONG",
+          "conditions": {
+            "trigger_zone": [732.00, 734.00],
+            "trigger_condition": "zamknięcie świecy 15m powyżej $732.20 oraz pomyślny retest strefy $732.00–$734.00 od góry",
+            "nasdaq_confirmation_price": 28100.0,
+            "nasdaq_confirmation_condition": "NASDAQ wykazuje stabilizację, a wolumen na MU rośnie"
+          },
+          "execution": {
+            "entry_zone": [734.50, 736.00],
+            "stop_loss_zone": [726.00, 726.00],
+            "take_profit_zones": [
+              [740.00, 740.00],
+              [750.00, 750.00]
+            ]
+          },
+          "commentary": "Ostrożniejsze zagranie zgodne z kierunkiem zmiany sentymentu. Unika kupowania w bieżącym trendzie spadkowym. Powrót pod $730.00 po naruszeniu $732.20 traktowany jest jako fałszywe wybicie."
+        },
+        {
+          "id": "setup_mu_short_rejection_01",
+          "name": "SHORT A: Odrzucenie Oporu (Resistance Rejection)",
+          "bias": "SHORT",
+          "conditions": {
+            "trigger_zone": [730.00, 733.00],
+            "trigger_condition": "odrzucenie poziomu $732.20 i zamknięcie świecy 15m poniżej $729.00",
+            "nasdaq_confirmation_price": 28100.0,
+            "nasdaq_confirmation_condition": "NASDAQ odrzuca intraday VWAP lub wykazuje słabość na swoich oporach"
+          },
+          "execution": {
+            "entry_zone": [730.00, 733.00],
+            "stop_loss_zone": [740.50, 740.50],
+            "take_profit_zones": [
+              [720.00, 720.00],
+              [715.50, 715.50]
+            ]
+          },
+          "commentary": "Preferowany scenariusz dopóki cena utrzymuje się pod $739.00–$740.00. Przy średnim wejściu $731.50 ryzyko wynosi ~$9.00, TP1 generuje ~$11.50 zysku (R/R ~1.28:1), a TP2 ~$16.00 zysku (R/R ~1.78:1)."
+        },
+        {
+          "id": "setup_mu_short_breakdown_02",
+          "name": "SHORT B: Kontynuacja Przełamania (Breakdown Continuation)",
+          "bias": "SHORT",
+          "conditions": {
+            "trigger_zone": [712.50, 714.00],
+            "trigger_condition": "zamknięcie świecy 15m poniżej $715.50 oraz nieudany retest strefy $715.50–$717.00 od dołu",
+            "nasdaq_confirmation_price": 28100.0,
+            "nasdaq_confirmation_condition": "NASDAQ pogłębia dołki i wykazuje presję podażową"
+          },
+          "execution": {
+            "entry_zone": [712.50, 714.00],
+            "stop_loss_zone": [722.50, 722.50],
+            "take_profit_zones": [
+              [705.00, 705.00],
+              [696.00, 696.00]
+            ]
+          },
+          "commentary": "Graj pod kontynuację spadków po utracie sesyjnego dołka. Retest jest kluczowy w celu uniknięcia pułapki na niedźwiedzie (short-covering). Szybki powrót nad $718.00 unieważnia układ."
+        }
+      ],
+      "correlation_context": {
+        "divergence_warning": {
+          "is_active": true,
+          "type": "high_beta_follower_stretch",
+          "description": "MUUSDT na platformie Bitget reprezentuje tokenizowaną akcję (RWA), której handel zależy od płynności sesji US. Z powodu braku stabilnej korelacji i wysokiej zmienności (beta ~5.6x względem indeksu), przed otwarciem pozycji wymagane jest filtrowanie zbywalności przez QQQ / kontrakt na NASDAQ oraz strictly przestrzeganie reakcji na oporach $732.20 / $740.00 i wsparciu $715.50."
+        }
+      }
+    }
+  }
+}
