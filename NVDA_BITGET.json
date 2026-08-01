@@ -1,148 +1,108 @@
 {
   "metadata": {
-    "timestamp": "2026-07-29T11:41:00+08:00",
-    "primary_ticker": "NVDA",
-    "macro_ticker": "NQ=F"
+    "timestamp": "2026-08-01T15:52:00+02:00",
+    "primary_ticker": "NVDAUSDT",
+    "macro_ticker": "QQQ"
   },
   "macro_environment": {
-    "fear_and_greed_index": 28,
-    "market_sentiment": "bearish_pullback-semiconductor_selloff"
+    "fear_and_greed_index": 45,
+    "market_sentiment": "mixed"
   },
   "assets": {
     "NASDAQ": {
-      "sentiment": "bearish-sector_rotation",
-      "key_gatekeeper_level": 24876.91,
+      "sentiment": "mixed-cautious",
+      "key_gatekeeper_level": 684.54,
       "analyses": [
         {
           "id": "nasdaq_analysis_01",
-          "name": "Korelacja z NASDAQ i Sektorem Półprzewodników (SOX)",
-          "description": "NVDA wykazała dalsze osłabienie, spadając do poziomu $191.26 (-3.22% w stosunku do poprzedniej sesji) przy wolumenie sięgającym 188.2 mln akcji. Wyprzedaż odbyła się w otoczeniu szerokiej korekty w branży technologicznej: indeks NASDAQ spadł o ponad 1%, podczas gdy indeks półprzewodników Philadelphia Semiconductor Index (SOX) stracił około 4%. Spadkom podlegały niemal wszystkie kluczowe spółki z sektora (AMD, Arm, Micron). Relacja z NASDAQ służy jako bezpośredni filtr rynkowy: stabilizacja indeksu oraz ETF-u SOXX wspiera scenariusz odbicia w kierunku $193.8–$198.2, natomiast kontynuacja przeceny i trwałe wyłamanie dołka $188.81 otwiera drogę do poziomów $186.5 oraz $184.8."
+          "name": "Korelacja z NASDAQ (QQQ) i Siła Względna",
+          "description": "NVDA ściśle podąża za indeksem NASDAQ (reprezentowanym przez ETF QQQ). Przy aktualnej cenie NVDA ~$198.95 i QQQ ~$684.54, NVDA wykazuje siłę względną (+1.07% vs QQQ -0.54% w ciągu ostatnich 24h). Zaleca się stałe monitorowanie QQQ dla szerszego kontekstu rynkowego."
         },
         {
           "id": "nasdaq_sentiment_news_02",
-          "name": "Sentyment Rynkowy, Obawy o CapEx i Presja na Wyceny AI",
-          "description": "Mimo że fundamenty spółki pozostają wyjątkowo silne (wysokie przychody, cash flow oraz wskaźnik długu do kapitału własnego na poziomie 0.04), rynek podlega skrajnej wrażliwości ze względu na wysokie wskaźniki wycenowe (P/E ~29.9, P/S ~18.8, P/FCF ~40.1). Sentyment wokół liderów infrastruktury AI został pogorszony przez obawy inwestorów o zrównoważony charakter ogromnych nakładów inwestycyjnych (CapEx) oraz wyzwania bilansowe związane z finansowaniem centrów danych (m.in. doniesienia o rozmowach finansowych na kwotę 250 mld USD dla OpenAI). Efektem rotacji kapitałowej był m.in. spadek wyceny rynkowej Nvidia i ponowne objęcie pozycji najcenniejszej spółki świata przez Apple."
+          "name": "Sentyment Rynkowy i Sektor AI",
+          "description": "Sentyment rynkowy jest mieszany z pojawiającymi się ostrzeżeniami dotyczącymi bańki w sektorze AI. NVDA pozostaje jednak liderem branży o silnych fundamentach."
         }
       ]
     },
     "NVDA": {
-      "current_price": 191.259,
+      "current_price": 198.95,
       "price_ranges": [
         {
           "id": "range_intraday_01",
-          "name": "Pierwotny Zakres Intraday",
-          "support_zone": [188.80, 191.00],
-          "resistance_zone": [193.80, 195.00],
+          "name": "Zakres Intraday (Current Trading Range)",
+          "support_zone": [195.00, 196.00],
+          "resistance_zone": [202.00, 204.00],
           "timeframe": "15m",
           "color": "#89dceb",
-          "description": "Główny zakres decyzyjny przy obecnej cenie ($191.26). Dolna granica na $188.81 stanowi kluczowy pivot sesyjny, a strefa $193.8–$195.0 jest pierwszym oporem dla próby odbicia."
+          "description": "Bieżący zakres handlu intraday wyznaczony przez poziomy $195.00 - $202.00."
         },
         {
           "id": "range_bullish_02",
-          "name": "Strefa Ekspansji Wzrostowej",
-          "support_zone": [193.80, 195.00],
-          "resistance_zone": [196.50, 198.20],
+          "name": "Wzrostowa Ekspansja (Short-Term Swing)",
+          "support_zone": [202.00, 204.00],
+          "resistance_zone": [206.00, 207.50],
           "timeframe": "1h",
           "color": "#a6e3a1",
-          "description": "Strefa uaktywniana po odzyskaniu $195.00 i wyjściu ponad maksimum sesyjne $198.23 z docelowym zasięgiem $200.00–$202.80 przy wsparciu ze strony NASDAQ."
+          "description": "Szerszy zakres wyznaczający górny opór na poziomie $207.50 (poprzedni lokalny szczyt)."
         },
         {
           "id": "range_bearish_03",
-          "name": "Strefa Ekspansji Spadkowej",
-          "support_zone": [184.80, 186.50],
-          "resistance_zone": [188.60, 188.90],
+          "name": "Spadkowa Ekspansja (Lower Support Range)",
+          "support_zone": [190.00, 192.00],
+          "resistance_zone": [195.00, 196.00],
           "timeframe": "1h",
           "color": "#f38ba8",
-          "description": "Zakres otwierany po trwałym przełamaniu poziomu $188.80 i nieudanej próbie jego ponownego odzyskania."
+          "description": "Niższy zakres wsparcia z psychologicznym poziomem $190.00 aktywowany po wyłamaniu wsparcia $195.00."
         }
       ],
       "setups": [
         {
           "id": "setup_nvda_long_support_rebound_01",
-          "name": "LONG: Odbicie od Wsparcia (Primary Long)",
+          "name": "LONG: Odbicie od Strefy Wsparcia (Support Bounce)",
           "bias": "LONG",
           "conditions": {
-            "trigger_zone": [189.80, 191.20],
-            "trigger_condition": "utrzymanie obszaru $189.8–$191.2, uformowanie wyższych dołków na 15m oraz wyhamowanie spadków na kontraktach NASDAQ / SOXX",
-            "nasdaq_confirmation_price": 24876.91,
-            "nasdaq_confirmation_condition": "NASDAQ futures wykazują oznaki stabilizacji i zatrzymania fali wyprzedaży"
+            "trigger_zone": [195.00, 196.00],
+            "trigger_condition": "zakup w pobliżu strefy wsparcia $195.00 - $196.00 po potwierdzeniu odbicia lub pro-wzrostowej formacji odwrócenia",
+            "nasdaq_confirmation_price": 684.54,
+            "nasdaq_confirmation_condition": "stabilizacja lub wzrosty na indeksie QQQ"
           },
           "execution": {
-            "entry_zone": [190.00, 191.20],
-            "stop_loss_zone": [188.40, 188.40],
+            "entry_zone": [195.00, 196.00],
+            "stop_loss_zone": [192.00, 192.00],
+            "take_profit_zones": [
+              [202.00, 202.00],
+              [207.50, 207.50]
+            ]
+          },
+          "commentary": "Plan odbicia od strefy wsparcia $195.00-$196.00 z celem TP1 na $202.00 oraz TP2 na $207.50. Stop Loss wyznaczony poniżej wsparcia na poziomie $192.00."
+        },
+        {
+          "id": "setup_nvda_short_rejection_02",
+          "name": "SHORT: Odrzucenie na Strefie Oporu (Resistance Rejection)",
+          "bias": "SHORT",
+          "conditions": {
+            "trigger_zone": [202.00, 204.00],
+            "trigger_condition": "pozycja krótka w rejonie oporu $202.00 - $204.00 przy sygnałach odwrócenia lub słabości indeksu NASDAQ",
+            "nasdaq_confirmation_price": 684.54,
+            "nasdaq_confirmation_condition": "słabość QQQ / odrzucenie oporów na sektorze technologicznym"
+          },
+          "execution": {
+            "entry_zone": [202.00, 204.00],
+            "stop_loss_zone": [206.00, 206.00],
             "take_profit_zones": [
               [195.00, 195.00],
-              [198.00, 198.00]
+              [190.00, 190.00]
             ]
           },
-          "commentary": "Główny plan na pozycję długą. Średnie wejście wokół $190.60 daje ryzyko ~2.2 USD. Potencjał zysku wynosi ~4.4 USD do TP1 (R/R 2.0:1) oraz ~7.4 USD do TP2 (R/R 3.4:1). Złamanie $188.80 unieważnia setup."
-        },
-        {
-          "id": "setup_nvda_long_reclaim_02",
-          "name": "LONG: Potwierdzenie Odzyskania Oporu (Secondary Long)",
-          "bias": "LONG",
-          "conditions": {
-            "trigger_zone": [193.80, 194.20],
-            "trigger_condition": "wybicie $193.80 i udany retest tego poziomu jako nowego wsparcia",
-            "nasdaq_confirmation_price": 24876.91,
-            "nasdaq_confirmation_condition": "poprawa szerokości rynku technologicznego i wzrost wolumenu kupujących"
-          },
-          "execution": {
-            "entry_zone": [193.80, 194.20],
-            "stop_loss_zone": [192.40, 192.40],
-            "take_profit_zones": [
-              [196.50, 196.50],
-              [198.20, 198.20]
-            ]
-          },
-          "commentary": "Bezpieczniejszy wariant long na potwierdzenie zmiany kierunku rynku. Wymaga wyższego wejścia, ale ogranicza ryzyko łapania spadającego noża."
-        },
-        {
-          "id": "setup_nvda_short_rejection_01",
-          "name": "SHORT: Odrzucenie na Oporze R1 (Primary Short)",
-          "bias": "SHORT",
-          "conditions": {
-            "trigger_zone": [193.80, 195.00],
-            "trigger_condition": "podejście w strefę $193.8–$195.0 i wyraźna reakcja podażowa (brak możliwości trwałego wyjścia nad $195.00)",
-            "nasdaq_confirmation_price": 24876.91,
-            "nasdaq_confirmation_condition": "utrzymywanie się ujemnej dynamiki na indeksie NASDAQ i sektora spółek chipowych"
-          },
-          "execution": {
-            "entry_zone": [193.80, 194.80],
-            "stop_loss_zone": [196.20, 196.20],
-            "take_profit_zones": [
-              [189.00, 189.00],
-              [186.60, 186.60]
-            ]
-          },
-          "commentary": "Preferowany setup na spadek przy średnim wejściu $194.30 i ryzyku ~1.9 USD. TP1 daje potencjał 5.3 USD (R/R 2.8:1), a TP2 oferuje 7.7 USD (R/R 4.1:1). Wyjście ponad $196.50 unieważnia scenariusz."
-        },
-        {
-          "id": "setup_nvda_short_breakdown_02",
-          "name": "SHORT: Wybicie Poniżej $188.80 i Retest (Secondary Short)",
-          "bias": "SHORT",
-          "conditions": {
-            "trigger_zone": [188.60, 188.90],
-            "trigger_condition": "zamknięcie świecy poniżej $188.80 oraz nieudany retest poziomu $188.80–$188.90 od dołu",
-            "nasdaq_confirmation_price": 24876.91,
-            "nasdaq_confirmation_condition": "pogłębienie wyprzedaży w sektorze półprzewodników"
-          },
-          "execution": {
-            "entry_zone": [188.60, 188.90],
-            "stop_loss_zone": [190.20, 190.20],
-            "take_profit_zones": [
-              [186.60, 186.60],
-              [184.80, 184.80]
-            ]
-          },
-          "commentary": "Zagranie pod kontynuację spadków po utracie głównego dołka sesyjnego. Szybki powrót ceny powyżej $189.50–$190.00 oznacza nieudane wybicie (fakeout)."
+          "commentary": "Gra na odrzucenie oporu $202.00-$204.00 z celami TP1 na $195.00 oraz TP2 na $190.00. Stop Loss na $206.00 chroni przed ryzykiem fałszywego wybicia."
         }
       ],
       "correlation_context": {
         "divergence_warning": {
           "is_active": true,
-          "type": "high_beta_follower_stretch",
-          "description": "Przy obecnej cenie $191.26 kurs akcji znajduje się blisko dolnej granicy wsparcia, co czyni otwarcie nowych pozycji krótkich nieatrakcyjnym pod kątem stosunku zysku do ryzyka. Najbardziej optymalną strategią jest oczekiwanie na potwierdzenie sygnałów odbicia na strefie $189.8–$191.2 (Long) lub odrzucenia oporu w rejonie $193.8–$195.0 (Short)."
+          "type": "nasdaq_correlation_and_ai_bubble_concerns",
+          "description": "Mimo krótkoterminowej siły względnej NVDA wobec QQQ, spółka wykazuje wysoką wrażliwość na ogólny sentyment w branży AI. W przypadku silnych ruchów na NASDAQ należy odpowiednio dostosowywać poziomy TP i SL."
         }
       }
     }

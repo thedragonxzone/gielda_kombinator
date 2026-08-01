@@ -1,0 +1,181 @@
+{
+  "metadata": {
+    "timestamp": "2026-08-01T12:48:00Z",
+    "primary_ticker": "SOLUSDT",
+    "macro_ticker": "BTCUSDT"
+  },
+  "macro_environment": {
+    "fear_and_greed_index": 27,
+    "market_sentiment": "Krótkoterminowe otoczenie rynkowe pozostaje defensywne i neutralno-niedźwiedzie (Wskaźnik Strachu i Chciwości wynosi 27). Całkowita kapitalizacja rynku kryptowalut spadła z 2,210 bln USD do 2,159 bln USD w ostatnich sesjach. SOLUSDT notowana jest na poziomie 72.98 USD (-0.91% w ciągu 24h), podążając za spadkowym ruchem Bitcoina (BTCUSDT na poziomie 63 121.01 USD, -1.07%). Ujemna premia Coinbase na BTC utrzymuje się już 75. dzień z rzędu, co wskazuje na osłabiony popyt na rynku spot w USA. Niewielkie dodatnie napływy do ETF-ów spot na SOL (~395 000 USD) stanowią czynnik wspierający, lecz są zbyt małe, by samodzielnie przeważyć presję kierunkową podyktowaną przez Bitcoina."
+  },
+  "general_analysis": {
+    "title": "Analiza Techniczna SOLUSDT oraz Ramy Korelacji z BTC",
+    "content": "<h2 style='color:#f5c2e7;'>Struktura Rynku Futures i Pozycjonowanie</h2><p>Kurs <b>SOLUSDT</b> wynosi <b>72.98 USD</b> i znajduje się w fazie kompresji wokół poziomu 73.00 USD po spadku z rejonu 74.90–75.30 USD. Świece godzinowe pokazują powtarzające się odrzucenia w strefie oporu 73.20–73.40 USD, podczas gdy strona popytowa zdołała obronić przedział wsparcia 72.80–72.90 USD. Tworzy to rynek zamknięty w konsolidacji, w którym cierpliwe oczekiwanie na potwierdzenie kierunku jest kluczowe, a wchodzenie w pozycje w środku zakresu niesie niekorzystne pozycjonowanie.</p><hr style='border:1px solid #313244;'><h2 style='color:#89b4fa;'>Ramy Korelacji z Bitcoinem (BTC Correlation Framework)</h2><p>Bitcoin (<b>63 121.01 USD</b>) trzyma się tuż nad kluczowym poziomem wsparcia 62 900–63 000 USD, który pełni funkcję głównego filtra trendu dla SOL. Korelacja ma charakter asymetryczny: stabilizacja BTC wspiera odbicie SOL, natomiast wyłamanie na BTC przełoży się na szybszy spadek SOL z uwagi na wyższy współczynnik beta altcoina.</p><ul><li><b>Byczy scenariusz BTC:</b> Utrzymanie progu 63 000 USD i ponowne wyjście nad 63 400–63 600 USD otwiera SOL przestrzeń do testu 73.80–74.10 USD, a następnie 74.50–74.90 USD.</li><li><b>Neutralny scenariusz BTC:</b> Przebywanie BTC w paśmie 62 900–63 400 USD utrzyma SOL w konsolidacji 72.60–73.80 USD, drastycznie obniżając atrakcyjność tradingu pod wybicia.</li><li><b>Niedźwiedzi scenariusz BTC:</b> Trwałe zamknięcie świecy H1 poniżej 62 700 USD na BTC zwiększa prawdopodobieństwo spływu SOL w stronę 72.35–72.20 USD oraz 71.80–71.50 USD.</li></ul><hr style='border:1px solid #313244;'><h2 style='color:#fab387;'>Główne Poziomy Wsparcia i Oporu SOLUSDT</h2><ul><li><b>Ekstremalny opór / Rozszerzenie:</b> 75.20–75.50 USD</li><li><b>Silna strefa oporu / Wybicie:</b> 74.50–74.90 USD</li><li><b>Kluczowe pasmo oporu:</b> 73.80–74.10 USD</li><li><b>Pierwszy opór (Supply Zone):</b> 73.20–73.40 USD</li><li><b>Pierwsze wsparcie (Intraday):</b> 72.80–72.60 USD</li><li><b>Główne wsparcie (Invalidation Zone):</b> 72.35–72.20 USD</li><li><b>Rozszerzona strefa spadkowa:</b> 71.80–71.50 USD</li></ul><hr style='border:1px solid #313244;'><h2 style='color:#a6e3a1;'>Przegląd Strategii i Setupów Transakcyjnych</h2><ul><li><b>LONG Setup A (Primary Breakout Long):</b> Wybicie 73.20 USD i obrona w retest. Entry: 73.22–73.30 USD. SL: 72.18 USD (ryzyko ~1.08 USD). TP1: 73.78 USD, TP2: 74.42 USD. Realizacja TP1 pełni rolę częściowego zabezpieczenia zysku, podczas gdy TP2 zapewnia wyższą stopę zwrotu.</li><li><b>LONG Setup B (Pullback Long):</b> Powrót po uprzednim odzyskaniu 73.20 USD. Entry: 72.88–72.95 USD. SL: 72.35 USD. TP1: 73.40 USD, TP2: 73.90 USD. Oferuje korzystniejsze pozycjonowanie, ale wymaga wcześniejszej obrony 73.20 USD i traci na jakości przy BTC < 62 900 USD.</li><li><b>SHORT Setup A (Breakdown Short):</b> Wyłamanie dołem i zamknięcie H1 pod 72.95 USD przy słabości BTC. Entry: 72.90–72.96 USD. SL: 73.58 USD (ryzyko ~0.65 USD). TP1: 72.42 USD, TP2: 71.82 USD. Częściowa realizacja na TP1 pozwala ograniczyć ryzyko przed testem głębszego wsparcia.</li><li><b>SHORT Setup B (Resistance Rejection Short):</b> Odrzucenie strefy 73.20–73.40 USD przy braku siły BTC. Entry: 73.18–73.28 USD. SL: 73.58 USD. TP1: 72.80 USD, TP2: 72.35 USD. Czysty setup w przypadku braku siły popytu; wyjście ceny nad 73.40 USD unieważnia ten scenariusz.</li></ul>"
+  },
+  "assets": {
+    "BTC": {
+      "current_price": 63121.01,
+      "sentiment": "Słabe/defensywne nastawienie z lekkim nachyleniem spadkowym (-1.07%). BTC trzyma się tuż nad wsparciem 62 900–63 000 USD, pełniając funkcję wyznacznika kierunku dla SOL.",
+      "key_gatekeeper_level": 62900.0,
+      "price_ranges": [
+        {
+          "id": "btc_range_immediate_01",
+          "name": "BTC Pasmo Kontrolne i Filtry Kierunkowe",
+          "support_zone": [62700.0, 63000.0],
+          "resistance_zone": [63400.0, 63600.0],
+          "timeframe": "1h",
+          "color": "#89dceb",
+          "description": "Bitcoin na poziomie 63 121.01 USD. Zamknięcie H1 poniżej 62 700 USD napędza spadek na altcoinach. Wyjście powyżej 63 400–63 600 USD stanowi warunek dla szerszych wzrostów SOL."
+        }
+      ],
+      "setups": []
+    },
+    "SOL": {
+      "current_price": 72.98,
+      "price_ranges": [
+        {
+          "id": "range_intraday_01",
+          "name": "Strefa Bazy i Konsolidacji (Base Range)",
+          "support_zone": [72.50, 72.80],
+          "resistance_zone": [73.20, 74.10],
+          "timeframe": "1h",
+          "color": "#89dceb",
+          "description": "Bazowy przedział handlowy 72.50–74.10 USD. Przy obecnym kursie 72.98 USD cena znajduje się w centrum zakresu, co wymusza oczekiwanie na sygnały potwierdzenia."
+        },
+        {
+          "id": "range_swing_02",
+          "name": "Pasmo Byczego Wybicia (Expansion Zone)",
+          "support_zone": [74.10, 74.50],
+          "resistance_zone": [74.50, 74.90],
+          "timeframe": "1h",
+          "color": "#d4befe",
+          "description": "Strefa aktywowana w przypadku wzrostu prowadzonego przez Bitcoina. Przebicie 74.50–74.90 USD otwiera drogę do rozszerzenia w stronę 75.20–75.50 USD."
+        },
+        {
+          "id": "range_breakdown_03",
+          "name": "Pasmo Wyłamania i Korekty Spadkowej",
+          "support_zone": [71.80, 72.20],
+          "resistance_zone": [72.35, 72.80],
+          "timeframe": "1h",
+          "color": "#fab387",
+          "description": "Strefa ryzyka spadkowego eksponowana po przełamaniu wsparcia 72.60–72.80 USD i utracie 62 700 USD przez Bitcoina."
+        }
+      ],
+      "setups": [
+        {
+          "id": "setup_sol_long_breakout_01",
+          "name": "LONG Setup A: Główne Wybicie Oporu (Primary Breakout Long)",
+          "bias": "LONG",
+          "conditions": {
+            "trigger_zone": [73.20, 73.30],
+            "trigger_condition": "Przebicie poziomu 73.20 USD i utrzymanie go podczas korekty powrotnej (retest).",
+            "btc_confirmation_price": 63000.0,
+            "btc_confirmation_condition": "Bitcoin utrzymuje się powyżej 63 000 USD."
+          },
+          "execution": {
+            "entry_zone": [73.22, 73.30],
+            "stop_loss_zone": [72.18, 72.18],
+            "take_profit_zones": [
+              [73.78, 73.78],
+              [74.42, 74.42]
+            ]
+          },
+          "commentary": "Warunkiem wejścia w pozycję jest potwierdzenie siły popytu poprzez trwale wyjście i utrzymanie ceny nad poziomem 73.20 USD przy cenie BTC powyżej 63 000 USD. Przy przykładowej cenie wejścia 73.26 USD, odległość do Stop Lossa (72.18 USD) wynosi około 1.08 USD. Pierwsza strefa realizacji zysku TP1 (73.78 USD) daje około 0.52 USD zysku na jednostkę i służy jako strefa częściowego zabezpieczenia pozycji (partial profit). Wartość dodatnia całej pozycji opiera się na poprowadzeniu pozostałej, uciętej części pozycji do drugiego celu TP2 (74.42 USD), który oferuje około 1.16 USD zysku."
+        },
+        {
+          "id": "setup_sol_long_pullback_02",
+          "name": "LONG Setup B: Wybicie i Korekta Powrotna (Pullback Long)",
+          "bias": "LONG",
+          "conditions": {
+            "trigger_zone": [72.88, 72.95],
+            "trigger_condition": "Cena w pierwszej kolejności odzyskuje poziom 73.20 USD, po czym wykonuje cofnięcie do strefy 72.88–72.95 USD bez utraty wyznaczonego progu.",
+            "btc_confirmation_price": 62900.0,
+            "btc_confirmation_condition": "BTC nie opada poniżej 62 900 USD."
+          },
+          "execution": {
+            "entry_zone": [72.88, 72.95],
+            "stop_loss_zone": [72.35, 72.35],
+            "take_profit_zones": [
+              [73.40, 73.40],
+              [73.90, 73.90]
+            ]
+          },
+          "commentary": "Ten układ daje korzystniejszy stosunek ryzyka do zysku niż wejście w goniące rynek wybicie, jednakże wymaga uprzedniego potwierdzenia siły w postaci potraktowania strefy 73.20 USD jako wsparcia. Wejście następuje na korekcie w obszar 72.88–72.95 USD ze Stop Lossem na poziomie 72.35 USD. Realizacja zysków zaplanowana jest na TP1: 73.40 USD oraz TP2: 73.90 USD. W przypadku gdy kurs Bitcoina spadnie poniżej 62 900 USD, jakość i ważność tego setupu zostają istotnie obniżone."
+        },
+        {
+          "id": "setup_sol_short_breakdown_03",
+          "name": "SHORT Setup A: Wyłamanie Wsparcia Dołem (Breakdown Short)",
+          "bias": "SHORT",
+          "conditions": {
+            "trigger_zone": [72.90, 72.96],
+            "trigger_condition": "Zamknięcie świecy poniżej poziomu 72.95 USD oraz brak szybkiego powrotu nad tę strefę.",
+            "btc_confirmation_price": 62900.0,
+            "btc_confirmation_condition": "Bitcoin notowany jest poniżej poziomu 62 900 USD."
+          },
+          "execution": {
+            "entry_zone": [72.90, 72.96],
+            "stop_loss_zone": [73.58, 73.58],
+            "take_profit_zones": [
+              [72.42, 72.42],
+              [71.82, 71.82]
+            ]
+          },
+          "commentary": "Setup niedźwiedzi aktywowany utratą lokalnego wsparcia. Wyznaczone wejście znajduje się w przedziale 72.90–72.96 USD (przykładowo 72.93 USD) przy Stop Lossie umieszczonym na 73.58 USD, co przekłada się na ryzyko rzędu 0.65 USD. Pierwszy cel TP1 (72.42 USD, zysk ~0.51 USD) leży w pobliżu pierwszej strefy wsparcia intraday – częściowa realizacja zysków w tym miejscu pozwala na ograniczenie ekspozycji ryzyka przed dalszym ruchem w kierunku głębszego wsparcia TP2 na poziomie 71.82 USD (zysk ~1.11 USD)."
+        },
+        {
+          "id": "setup_sol_short_rejection_04",
+          "name": "SHORT Setup B: Odrzucenie Oporu (Resistance-Rejection Short)",
+          "bias": "SHORT",
+          "conditions": {
+            "trigger_zone": [73.18, 73.28],
+            "trigger_condition": "Podejście kursu SOL pod opór 73.20–73.40 USD i wyraźne odrzucenie tej strefy.",
+            "btc_confirmation_price": 63400.0,
+            "btc_confirmation_condition": "Bitcoin nie jest w stanie wyjść powrotnie nad poziom 63 400 USD."
+          },
+          "execution": {
+            "entry_zone": [73.18, 73.28],
+            "stop_loss_zone": [73.58, 73.58],
+            "take_profit_zones": [
+              [72.80, 72.80],
+              [72.35, 72.35]
+            ]
+          },
+          "commentary": "Jest to najbardziej przejrzysty i bezpieczny setup na pozycję krótką, dopóki SOL pozostaje zablokowany poniżej progu 73.40 USD. Wejście następuje na odrzuceniu oporu w paśmie 73.18–73.28 USD z docelowymi poziomami zamknięcia TP1 na 72.80 USD oraz TP2 na 72.35 USD. Zlecenia zabezpieczające Stop Loss usytuowane są na 73.58 USD. Trwały ruch ceny powyżej 73.40 USD (szczególnie przy jednoczesnym powrocie BTC nad 63 400 USD) całkowicie unieważnia tezę o odrzuceniu oporu i nakazuje wycofanie się z pozycji."
+        }
+      ],
+      "correlation_context": {
+        "divergence_warning": {
+          "is_active": true,
+          "type": "range_center_execution_hazard",
+          "description": "Przy bieżącej cenie 72.98 USD kurs SOLUSDT znajduje się blisko środka oczekiwanego zakresu wahań (72.50–74.10 USD). Składanie natychmiastowych zleceń rynkowych (market orders) na tym poziomie charakteryzuje się niekorzystną relacją zysku do ryzyka. Zaleca się wstrzymanie od egzekucji do momentu potwierdzenia wyjścia góra/dół lub odrzucenia krawędzi range'u."
+        },
+        "clean_trade_tickets": {
+          "long_primary_breakout": {
+            "entry_zone": [73.22, 73.30],
+            "take_profit_1": 73.78,
+            "take_profit_2": 74.42,
+            "stop_loss": 72.18
+          },
+          "long_pullback": {
+            "entry_zone": [72.88, 72.95],
+            "take_profit_1": 73.40,
+            "take_profit_2": 73.90,
+            "stop_loss": 72.35
+          },
+          "short_breakdown": {
+            "entry_zone": [72.90, 72.96],
+            "take_profit_1": 72.42,
+            "take_profit_2": 71.82,
+            "stop_loss": 73.58
+          },
+          "short_resistance_rejection": {
+            "entry_zone": [73.18, 73.28],
+            "take_profit_1": 72.80,
+            "take_profit_2": 72.35,
+            "stop_loss": 73.58
+          }
+        }
+      }
+    }
+  }
+}

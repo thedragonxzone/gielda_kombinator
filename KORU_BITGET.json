@@ -1,0 +1,130 @@
+{
+  "metadata": {
+    "timestamp": "2026-07-31T15:18:00+08:00",
+    "primary_ticker": "KORUUSDT",
+    "macro_ticker": "NQ=F"
+  },
+  "macro_environment": {
+    "fear_and_greed_index": 30,
+    "market_sentiment": "high_volatility_rebound"
+  },
+  "assets": {
+    "NASDAQ": {
+      "sentiment": "directional_filter_cautious",
+      "key_gatekeeper_level": 0.0,
+      "analyses": [
+        {
+          "id": "nasdaq_analysis_koru_01",
+          "name": "Korelacja Rynkowa i Filtrowanie dla KORUUSDT",
+          "description": "KORU i NASDAQ (QQQ) są powiązane poprzez cykl ryzyka w sektorze technologicznym i półprzewodników, ale nie są tożsame. KORU posiada skoncentrowaną ekspozycję na południowokoreańskie akcje i jest strukturalnie lewarowany. Notowania KORU traktują NASDAQ jako filtr kierunkowy: przy silnych kontraktach na NASDAQ i wsparciu sektora chipów KORU może wykazywać nadreaktywność wzrostową. Z kolei przy spadkach NASDAQ lub słabości lokalnego rynku w Korei (np. KOSPI, Samsung, SK Hynix) KORU traci proporcjonalnie mocniej."
+        },
+        {
+          "id": "nasdaq_sentiment_news_02",
+          "name": "Sentyment i Kontekst Rynkowy (KOSPI / Lewar / Chipy)",
+          "description": "Gwałtowne odbicie o 37.41% z poziomu $11.505 do $16.918 przy wolumenie ~73.1 mln jednostek (~1.07 mld USD wartości handlu) wskazuje na agresywne pokrywanie krótkich pozycji i impuls momentum. Należy jednak pamiętać, że produkt zaliczył wcześniej ~78% spadku od szczytu z czerwca w reakcji na presję na KOSPI i sektor półprzewodników. Reakcja ma charakter wysokiej zmienności i nie stanowi jeszcze potwierdzenia trwałego odwrócenia długoterminowego trendu spadkowego."
+        }
+      ]
+    },
+    "KORU": {
+      "current_price": 16.902,
+      "price_ranges": [
+        {
+          "id": "range_intraday_01",
+          "name": "Strefa Retraktacji i Testu Wsparcia (Pullback Zone)",
+          "support_zone": [15.80, 16.30],
+          "resistance_zone": [16.90, 17.20],
+          "timeframe": "15m",
+          "color": "#89dceb",
+          "description": "Baza pod optymalne wejście w pozycję długą po korekcie z lokalnego szczytu sesyjnego."
+        },
+        {
+          "id": "range_bullish_02",
+          "name": "Wzrostowa Ekspansja (Bullish Expansion)",
+          "support_zone": [16.90, 17.10],
+          "resistance_zone": [18.25, 20.50],
+          "timeframe": "1h",
+          "color": "#a6e3a1",
+          "description": "Strefa po wyjściu powyżej $17.20 otwierająca drogę do testu kluczowych oporów z niedawnej konsolidacji."
+        },
+        {
+          "id": "range_bearish_03",
+          "name": "Spadkowa Ekspansja (Bearish Expansion)",
+          "support_zone": [11.50, 12.10],
+          "resistance_zone": [14.00, 14.15],
+          "timeframe": "1h",
+          "color": "#f38ba8",
+          "description": "Zakres aktywowany po złamaniu głównego wsparcia $14.00–$14.15, oznaczający powrót do trendu spadkowego."
+        }
+      ],
+      "setups": [
+        {
+          "id": "setup_koru_long_pullback_01",
+          "name": "LONG A: Kupno na Potwierdzonym Cofnięciu (Confirmed Pullback Buy)",
+          "bias": "LONG",
+          "conditions": {
+            "trigger_zone": [15.80, 16.30],
+            "trigger_condition": "retes strefy $15.80–$16.30 i potwierdzenie odwrócenia na świecy 15m/1h przy rosnącym wolumenie",
+            "nasdaq_confirmation_price": 0.0,
+            "nasdaq_confirmation_condition": "kontrakty na NASDAQ utrzymują się powyżej otwarcia sesji US, a spółki z sektora półprzewodników wykazują siłę"
+          },
+          "execution": {
+            "entry_zone": [15.80, 16.30],
+            "stop_loss_zone": [14.95, 14.95],
+            "take_profit_zones": [
+              [16.90, 17.00],
+              [18.25, 18.65]
+            ]
+          },
+          "commentary": "Strategia zakłada powstrzymanie się od pogoni za ceną na szczytach. Kluczowe jest złapanie wejścia w niższej części strefy korekcyjnej, aby zachować optymalny stosunek zysku do ryzyka. Złamanie poziomu $14.00 unieważnia strukturę wzrostową."
+        },
+        {
+          "id": "setup_koru_long_breakout_02",
+          "name": "LONG B: Wybicie Oporu $17.20 (Breakout Long)",
+          "bias": "LONG",
+          "conditions": {
+            "trigger_zone": [17.10, 17.20],
+            "trigger_condition": "zamknięcie świecy 15m/1h powyżej $17.20 oraz pomyślny retest strefy $16.90–$17.10 od góry",
+            "nasdaq_confirmation_price": 0.0,
+            "nasdaq_confirmation_condition": "utrzymanie kontynuacji wzrostów na indeksie NASDAQ"
+          },
+          "execution": {
+            "entry_zone": [17.00, 17.20],
+            "stop_loss_zone": [16.50, 16.50],
+            "take_profit_zones": [
+              [18.25, 18.65],
+              [19.85, 20.50]
+            ]
+          },
+          "commentary": "Rozpatrywane wyłącznie po trwałym wybiciu $17.20. Szybki powrót ceny poniżej $16.90 należy traktować jako fałszywe wybicie (fakeout)."
+        },
+        {
+          "id": "setup_koru_short_rejection_01",
+          "name": "SHORT A: Odrzucenie na Oporze $16.90–$17.20 (Rejection Short)",
+          "bias": "SHORT",
+          "conditions": {
+            "trigger_zone": [16.70, 17.15],
+            "trigger_condition": "brak siły na wyjście ponad $17.20, formacja odrzucenia oporu i pojawienie się podaży",
+            "nasdaq_confirmation_price": 0.0,
+            "nasdaq_confirmation_condition": "NASDAQ futures lub sektor półprzewodników traci opory i słabnie"
+          },
+          "execution": {
+            "entry_zone": [16.70, 17.15],
+            "stop_loss_zone": [17.60, 17.80],
+            "take_profit_zones": [
+              [16.00, 16.30],
+              [14.00, 14.15]
+            ]
+          },
+          "commentary": "Gra pod odrzucenie po silnym impulsie. W przypadku definitywnego złamania poziomu $14.00, rozszerzony cel wyznaczony jest na strefę $12.00–$12.10. Trwały breakout powyżej $17.20 wybiórczo unieważnia scenariusz."
+        }
+      ],
+      "correlation_context": {
+        "divergence_warning": {
+          "is_active": true,
+          "type": "leveraged_etf_asymmetric_risk",
+          "description": "KORU bazuje na lewarowanym ETF-ie akcji południowokoreańskich. Produkt cechuje się dziennym resetem dźwigni oraz silną zależnością od rynku w Korei (KOSPI). Nawet przy stabilnym indeksie NASDAQ, lokalne czynniki ryzyka w Korei mogą powodować relatywną słabość waloru."
+        }
+      }
+    }
+  }
+}
